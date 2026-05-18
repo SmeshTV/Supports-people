@@ -1,0 +1,371 @@
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Admin client uses anon key (RLS handles permissions)
+export const supabaseAdmin: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: { autoRefreshToken: false, persistSession: false },
+});
+
+export type Subject = {
+  id: string;
+  name: string;
+  name_translations?: Record<string, string>;
+  description: string;
+  description_translations?: Record<string, string>;
+  icon: string;
+  color: string;
+  cover_image_url: string;
+  created_by: string | null;
+  created_at: string;
+  is_published: boolean;
+  order_index: number;
+};
+
+export type Category = {
+  id: string;
+  subject_id: string | null;
+  parent_id: string | null;
+  name: string;
+  name_translations?: Record<string, string>;
+  description: string;
+  description_translations?: Record<string, string>;
+  points: number;
+  order_index: number;
+  created_at: string;
+};
+
+export type QuestionOption = {
+  id: string;
+  text: string;
+  text_translations?: Record<string, string>;
+  is_correct?: boolean;
+};
+
+export type Question = {
+  id: string;
+  category_id: string | null;
+  type: 'single' | 'multiple' | 'truefalse' | 'fill' | 'short_answer' | 'essay' | 'matching' | 'ordering' | 'numeric' | 'dropdown' | 'cloze' | 'hotspot';
+  body: { text: string; text_translations?: Record<string, string>; image_url?: string };
+  options: QuestionOption[];
+  correct_answers: string[];
+  correct_text?: string;
+  correct_text_translations?: Record<string, string>;
+  correct_order?: string[];
+  correct_pairs?: { left: string; right: string }[];
+  explanation: { text: string; text_translations?: Record<string, string> };
+  hint: string;
+  hint_translations?: Record<string, string>;
+  difficulty: 'easy' | 'medium' | 'hard' | 'unknown';
+  points: number;
+  time_limit_sec: number | null;
+  tags: string[];
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  is_published: boolean;
+};
+
+export type TestSettings = {
+  shuffle_questions: boolean;
+  shuffle_options: boolean;
+  time_limit_sec: number | null;
+  passing_score_pct: number;
+  show_explanations: 'immediate' | 'end' | 'never';
+  allow_retakes: boolean;
+  max_retakes: number | null;
+  mode: 'practice' | 'exam';
+  question_count: number | null;
+  difficulty_filter: string | null;
+};
+
+export type TestSet = {
+  id: string;
+  subject_id: string | null;
+  category_id?: string | null;
+  name: string;
+  name_translations?: Record<string, string>;
+  description: string;
+  description_translations?: Record<string, string>;
+  source_description: string;
+  source_description_translations?: Record<string, string>;
+  settings: TestSettings;
+  question_ids: string[];
+  created_by: string | null;
+  created_at: string;
+  is_published: boolean;
+};
+
+export type UserAnswer = {
+  question_id: string;
+  selected_option_ids: string[];
+  is_correct: boolean;
+  time_taken_sec: number;
+};
+
+export type TestAttempt = {
+  id: string;
+  user_id: string | null;
+  test_set_id: string | null;
+  started_at: string;
+  finished_at: string | null;
+  answers: UserAnswer[];
+  score: number;
+  max_score: number;
+  passed: boolean;
+};
+
+export type UserProfile = {
+  id: string;
+  firebase_uid: string;
+  email: string;
+  display_name: string;
+  role: 'student' | 'teacher' | 'admin';
+  created_at: string;
+  last_seen: string;
+  preferences: Record<string, unknown>;
+};
+
+export type DirectionType = {
+  id: string;
+  type: 'school' | 'university';
+  name_ru: string;
+  name_kz: string;
+  description: string;
+  icon: string;
+  color: string;
+  order_index: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+// Legacy types for backward compatibility
+export type Semester = {
+  id: string;
+  course_id: string | null;
+  name: string;
+  start_date: string | null;
+  end_date: string | null;
+  order_index: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Session = {
+  id: string;
+  semester_id: string | null;
+  name: string;
+  session_type: 'midterm' | 'final' | 'credit';
+  start_date: string | null;
+  end_date: string | null;
+  description: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Direction = {
+  id: string;
+  direction_type: 'school' | 'university';
+  name: string;
+  name_translations?: Record<string, string>;
+  description: string;
+  description_translations?: Record<string, string>;
+  icon: string;
+  color: string;
+  order_index: number;
+  is_published: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Course = {
+  id: string;
+  direction_id: string | null;
+  name: string;
+  name_translations?: Record<string, string>;
+  short_name: string;
+  short_name_translations?: Record<string, string>;
+  order_index: number;
+  is_published: boolean;
+  start_date?: string | null;
+  end_date?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Discipline = {
+  id: string;
+  direction_id: string | null;
+  course_id: string | null;
+  name: string;
+  name_translations?: Record<string, string>;
+  description: string;
+  description_translations?: Record<string, string>;
+  order_index: number;
+  is_published: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Attestation = {
+  id: string;
+  discipline_id: string | null;
+  name: string;
+  name_translations?: Record<string, string>;
+  attestation_type: 'attestation1' | 'attestation2' | 'session';
+  order_index: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AttestationExam = {
+  id: string;
+  attestation_id: string | null;
+  name: string;
+  name_translations?: Record<string, string>;
+  exam_type: 'intermediate' | 'midterm' | 'endterm' | 'test';
+  description: string;
+  description_translations?: Record<string, string>;
+  test_set_id: string | null;
+  has_lectures: boolean;
+  order_index: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Section = {
+  id: string;
+  discipline_id: string | null;
+  direction_id: string | null;
+  parent_id: string | null;
+  name: string;
+  name_translations?: Record<string, string>;
+  description: string;
+  description_translations?: Record<string, string>;
+  content: string;
+  content_translations?: Record<string, string>;
+  order_index: number;
+  is_published: boolean;
+  test_set_id: string | null;
+  lecture_content: string;
+  lecture_content_translations?: Record<string, string>;
+  image_url: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type HelperArticle = {
+  id: string;
+  title: string;
+  title_translations?: Record<string, string>;
+  content: string;
+  content_translations?: Record<string, string>;
+  category: string;
+  tags: string[];
+  parent_id: string | null;
+  order_index: number;
+  is_published: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Exam = {
+  id: string;
+  discipline_id: string | null;
+  session_id: string | null;
+  name: string;
+  description: string;
+  exam_date: string | null;
+  exam_time: string | null;
+  duration_minutes: number;
+  is_published: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TrashItem = {
+  id: string;
+  content_type: 'subject' | 'direction' | 'course' | 'semester' | 'discipline' | 'section' | 'test_set' | 'question' | 'exam' | 'helper_article' | 'attestation' | 'attestation_exam';
+  content_id: string;
+  content_data: Record<string, unknown>;
+  parent_id: string | null;
+  deleted_by: string | null;
+  deleted_at: string;
+  expires_at: string;
+  is_restored: boolean;
+  restored_at: string | null;
+  restored_by: string | null;
+};
+
+export type UserProgress = {
+  id: string;
+  user_id: string;
+  discipline_id: string | null;
+  section_id: string | null;
+  test_set_id: string | null;
+  xp_points: number;
+  level: number;
+  streak_days: number;
+  questions_total: number;
+  questions_correct: number;
+  tests_completed: number;
+  last_activity_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type UserAchievement = {
+  id: string;
+  user_id: string;
+  achievement_key: string;
+  title: string;
+  description: string;
+  icon: string;
+  earned_at: string;
+};
+
+export const TRASH_TABLES: Record<string, string> = {
+  direction: 'directions',
+  course: 'courses',
+  discipline: 'disciplines',
+  attestation: 'attestations',
+  attestation_exam: 'attestation_exams',
+  section: 'sections',
+  helper_article: 'helper_articles',
+  test_set: 'test_sets',
+  question: 'questions',
+};
+
+export async function moveToTrash(supabase: any, type: string, id: string, parentId: string | null) {
+  const table = TRASH_TABLES[type];
+  if (!table) return;
+
+  const { data } = await supabase.from(table).select('*').eq('id', id).maybeSingle();
+  if (!data) return;
+
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  await supabase.from('trash').insert({
+    content_type: type,
+    content_id: id,
+    content_data: data,
+    parent_id: parentId,
+    deleted_at: new Date().toISOString(),
+    expires_at: expiresAt,
+    is_restored: false,
+  });
+
+  await supabase.from(table).delete().eq('id', id);
+}
