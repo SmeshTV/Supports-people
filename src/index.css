@@ -263,6 +263,115 @@ body {
 
 @media (min-width: 768px) { .nav-links { display: flex; } }
 
+.mobile-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
+}
+
+.mobile-menu-btn:hover {
+  background: var(--bg-hover);
+}
+
+@media (min-width: 768px) {
+  .mobile-menu-btn { display: none; }
+}
+
+.mobile-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mobile-menu-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+}
+
+.mobile-menu-link:hover, .mobile-menu-link:active {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.mobile-menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0;
+}
+
+.mobile-menu-btn-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.mobile-menu-btn-action.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.mobile-menu-btn-action:hover {
+  background: var(--bg-hover);
+}
+
+.mobile-menu-btn-action.primary:hover {
+  background: var(--accent-hover);
+}
+
+.mobile-menu-danger {
+  color: var(--danger) !important;
+}
+
+.mobile-menu-danger:hover {
+  background: var(--danger-soft) !important;
+}
+
 .nav-link {
   padding: 8px 14px;
   border-radius: var(--radius-sm);
@@ -5720,7 +5829,6 @@ select { cursor: pointer; }
 }
 
 @media (max-width: 768px) {
-  .admin-properties { width: 100%; position: absolute; right: 0; top: 0; bottom: 0; z-index: 50; }
   .create-type-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -5728,4 +5836,185 @@ select { cursor: pointer; }
 .admin-questions-page {
   padding-top: 80px;
   min-height: 100vh;
+}
+
+/* ===================== MOBILE RESPONSIVE ===================== */
+@media (max-width: 768px) {
+  /* Navbar */
+  .navbar-inner { height: 56px; padding: 0 12px; }
+  .nav-logo-icon { width: 32px; height: 32px; }
+  .nav-logo-text { font-size: 18px; }
+  .nav-actions { gap: 8px; }
+  .btn { padding: 8px 14px; font-size: 13px; }
+  .btn-sm { padding: 6px 10px; font-size: 12px; }
+
+  /* Hero */
+  .hero-content { padding: 32px 0 24px; }
+  .hero-title { font-size: 28px; }
+  .hero-description { font-size: 15px; }
+  .hero-actions { flex-direction: column; gap: 8px; }
+  .hero-actions .btn { width: 100%; justify-content: center; }
+  .hero-features { flex-direction: column; gap: 12px; }
+  .hero-badge { padding: 6px 12px; font-size: 12px; }
+
+  /* Container & Layout */
+  .container { padding: 0 16px; }
+  .page-content { padding: 16px; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .page-header h1 { font-size: 24px; }
+  .page-title { font-size: 22px; }
+
+  /* Stats */
+  .stats-section { padding: 24px 0; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .stat-value { font-size: 28px; }
+  .stat-label { font-size: 12px; }
+
+  /* Sections */
+  .section { padding: 32px 0; }
+  .section-title { font-size: 20px; }
+  .section-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  /* Grids */
+  .subjects-grid { grid-template-columns: 1fr; gap: 12px; }
+  .tests-grid { grid-template-columns: 1fr; gap: 12px; }
+  .direction-types-grid { grid-template-columns: 1fr; gap: 12px; }
+  .courses-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .quick-actions-grid { grid-template-columns: 1fr; }
+  .results-stats { grid-template-columns: 1fr; }
+
+  /* Cards */
+  .subject-card-inner { padding: 16px; }
+  .subject-card-icon { width: 48px; height: 48px; font-size: 20px; }
+  .subject-card-title { font-size: 16px; }
+  .test-card { padding: 16px; }
+  .test-card-title { font-size: 16px; }
+
+  /* Direction Type Cards */
+  .direction-type-card { padding: 20px; }
+  .direction-type-icon { width: 60px; height: 60px; font-size: 24px; }
+  .direction-type-name { font-size: 20px; }
+  .direction-type-desc { font-size: 13px; }
+
+  /* Forms */
+  .form-group { margin-bottom: 12px; }
+  .form-label { font-size: 13px; }
+  .form-input, .form-select, .form-textarea { padding: 10px 12px; font-size: 14px; }
+  .form-hint { font-size: 12px; }
+
+  /* Buttons & Actions */
+  .results-actions { flex-direction: column; }
+  .results-actions .btn { width: 100%; }
+  .admin-header-actions { flex-wrap: wrap; }
+
+  /* Tables */
+  .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 600px; }
+
+  /* Modals */
+  .modal-content { margin: 16px; max-height: calc(100vh - 32px); }
+  .modal-header { padding: 16px; }
+  .modal-body { padding: 16px; }
+  .modal-footer { padding: 16px; flex-direction: column; }
+  .modal-footer .btn { width: 100%; }
+
+  /* Sidebar (Admin) */
+  .admin-main { margin-left: 0; }
+  .tree-node { padding: 10px 12px; font-size: 14px; }
+  .tree-children { margin-left: 12px; }
+
+  /* Toast */
+  .toast-container { left: 16px; right: 16px; }
+  .toast { padding: 12px; }
+
+  /* Breadcrumb */
+  .breadcrumb { font-size: 12px; flex-wrap: wrap; }
+
+  /* Question/Answer Cards */
+  .question-card { padding: 16px; }
+  .question-text { font-size: 15px; }
+  .answer-option { padding: 12px; font-size: 14px; }
+
+  /* Admin Sections */
+  .admin-sections-container { grid-template-columns: 1fr; gap: 16px; }
+  .admin-sections-list, .admin-tests-list { padding: 16px; }
+
+  /* Create Form */
+  .create-type-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .create-type-btn { padding: 12px 8px; }
+  .create-type-icon { font-size: 20px; }
+  .create-type-label { font-size: 12px; }
+
+  /* Trash */
+  .trash-item { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .trash-item-actions { width: 100%; justify-content: flex-end; }
+
+  /* Google Translate */
+  #google_translate_element { position: fixed; bottom: 16px; right: 16px; z-index: 999; }
+  .goog-te-gadget .goog-te-combo { width: 120px; font-size: 12px; padding: 4px; }
+}
+
+@media (max-width: 480px) {
+  /* Extra Small Screens */
+  .hero-title { font-size: 24px; }
+  .hero-description { font-size: 14px; }
+  .page-title { font-size: 18px; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .courses-grid { grid-template-columns: 1fr; }
+  .create-type-grid { grid-template-columns: 1fr; }
+  .direction-types-grid { grid-template-columns: 1fr; }
+  .stat-value { font-size: 24px; }
+  .btn { padding: 10px 16px; font-size: 14px; }
+  .form-input, .form-select, .form-textarea { padding: 12px; font-size: 16px; }
+  .toast-container { left: 12px; right: 12px; }
+  #google_translate_element { bottom: 12px; right: 12px; }
+  .goog-te-gadget .goog-te-combo { width: 100px; }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  .btn { min-height: 44px; }
+  .btn-sm { min-height: 38px; }
+  .nav-link { min-height: 44px; }
+  .form-input, .form-select, .form-textarea { min-height: 44px; }
+  input[type="checkbox"], input[type="radio"] { width: 24px; height: 24px; }
+  .tree-node { min-height: 44px; }
+  .folder-item { min-height: 44px; }
+  .answer-option { min-height: 44px; }
+}
+
+/* Admin Mobile Toggle */
+.admin-mobile-toggle {
+  display: none;
+  position: fixed;
+  top: 72px;
+  left: 12px;
+  z-index: 45;
+  padding: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 768px) {
+  .admin-mobile-toggle { display: flex; align-items: center; justify-content: center; }
+  .admin-sidebar.closed { transform: translateX(-100%); }
+  .admin-sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
+  .admin-sidebar-overlay { position: fixed; inset: 0; top: 56px; background: rgba(0,0,0,0.5); z-index: 39; }
+  .admin-main { margin-left: 0 !important; }
+  .admin-properties { width: 100%; position: fixed; left: 0; right: 0; top: 56px; bottom: 0; z-index: 50; transform: translateX(100%); transition: transform 0.3s ease; }
+  .admin-properties.open { transform: translateX(0); }
+  .sidebar-header { padding: 12px 16px; }
+  .sidebar-tree { padding: 0 8px; }
+}
+
+/* Landscape phones */
+@media (max-width: 768px) and (orientation: landscape) {
+  .hero-content { padding: 20px 0; }
+  .modal-content { max-height: 80vh; }
+  .admin-sidebar { max-height: calc(100vh - 56px); }
+  .admin-properties { max-height: calc(100vh - 56px); }
 }

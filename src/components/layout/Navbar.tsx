@@ -20,6 +20,7 @@ export default function Navbar() {
   
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { language, setLanguage, t } = useI18n();
 
@@ -46,13 +47,51 @@ export default function Navbar() {
             <span className="nav-logo-text">{t('app.name', 'PrepIQ')}</span>
           </Link>
 
+          <button className="mobile-menu-btn" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              {mobileMenuOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+
           <div className="nav-links">
-            <Link to="/directions" className="nav-link">{t('nav.directions', 'Направления')}</Link>
-            <Link to="/subjects" className="nav-link">{t('nav.subjects', 'Предметы')}</Link>
-            <Link to="/tests" className="nav-link">{t('nav.tests', 'Тесты')}</Link>
-            {user && <Link to="/dashboard" className="nav-link">{t('nav.dashboard', 'Панель')}</Link>}
-            {user && <Link to="/bookmarks" className="nav-link">{t('nav.bookmarks', 'Закладки')}</Link>}
+            <Link to="/directions" className="nav-link" onClick={() => setMobileMenuOpen(false)}>{t('nav.directions', 'Направления')}</Link>
+            <Link to="/subjects" className="nav-link" onClick={() => setMobileMenuOpen(false)}>{t('nav.subjects', 'Предметы')}</Link>
+            <Link to="/tests" className="nav-link" onClick={() => setMobileMenuOpen(false)}>{t('nav.tests', 'Тесты')}</Link>
+            {user && <Link to="/dashboard" className="nav-link" onClick={() => setMobileMenuOpen(false)}>{t('nav.dashboard', 'Панель')}</Link>}
+            {user && <Link to="/bookmarks" className="nav-link" onClick={() => setMobileMenuOpen(false)}>{t('nav.bookmarks', 'Закладки')}</Link>}
           </div>
+
+          {mobileMenuOpen && (
+            <div className="mobile-menu">
+              <Link to="/directions" className="mobile-menu-link" onClick={() => setMobileMenuOpen(false)}>{t('nav.directions', 'Направления')}</Link>
+              <Link to="/subjects" className="mobile-menu-link" onClick={() => setMobileMenuOpen(false)}>{t('nav.subjects', 'Предметы')}</Link>
+              <Link to="/tests" className="mobile-menu-link" onClick={() => setMobileMenuOpen(false)}>{t('nav.tests', 'Тесты')}</Link>
+              {user && <Link to="/dashboard" className="mobile-menu-link" onClick={() => setMobileMenuOpen(false)}>{t('nav.dashboard', 'Панель')}</Link>}
+              {user && <Link to="/bookmarks" className="mobile-menu-link" onClick={() => setMobileMenuOpen(false)}>{t('nav.bookmarks', 'Закладки')}</Link>}
+              <div className="mobile-menu-divider" />
+              {user ? (
+                <>
+                  <Link to="/profile" className="mobile-menu-link" onClick={() => setMobileMenuOpen(false)}>{t('nav.profile', 'Профиль')}</Link>
+                  {user.email === DEV_EMAIL && (
+                    <>
+                      <Link to="/admin" className="mobile-menu-link" onClick={() => setMobileMenuOpen(false)}>{t('nav.adminPanel', 'Админ панель')}</Link>
+                      <Link to="/trash" className="mobile-menu-link" onClick={() => setMobileMenuOpen(false)}>{t('nav.trash', 'Корзина')}</Link>
+                    </>
+                  )}
+                  <button className="mobile-menu-link mobile-menu-danger" onClick={() => { handleSignOut(); setMobileMenuOpen(false); }}>{t('nav.signOut', 'Выйти')}</button>
+                </>
+              ) : (
+                <>
+                  <button className="mobile-menu-btn-action" onClick={() => { openAuthModal('login'); setMobileMenuOpen(false); }}>{t('nav.signIn', 'Войти')}</button>
+                  <button className="mobile-menu-btn-action primary" onClick={() => { openAuthModal('register'); setMobileMenuOpen(false); }}>{t('nav.signUp', 'Регистрация')}</button>
+                </>
+              )}
+            </div>
+          )}
 
           <div className="nav-actions">
             {user?.email === DEV_EMAIL && (

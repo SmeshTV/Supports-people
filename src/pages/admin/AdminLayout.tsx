@@ -20,6 +20,7 @@ function AdminLayoutInner() {
     showCreateMenu,
     contextMenuPos,
     contextActions,
+    toggleSidebar,
     setShowCreateMenu,
     hideContextMenu,
   } = useSelection();
@@ -36,6 +37,16 @@ function AdminLayoutInner() {
 
   return (
     <div className="admin-layout" style={{ paddingTop: 64 }}>
+      {/* Mobile Sidebar Toggle */}
+      <button className="admin-mobile-toggle" onClick={toggleSidebar} aria-label="Toggle sidebar">
+        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && <div className="admin-sidebar-overlay" onClick={toggleSidebar} />}
+
       {/* Left Sidebar */}
       <div className={`admin-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
         <AdminSidebar />
