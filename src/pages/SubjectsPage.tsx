@@ -87,8 +87,8 @@ export default function SubjectsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <h3 className="empty-state-title">Ничего не найдено</h3>
-            <p className="empty-state-description">Попробуйте изменить поисковый запрос</p>
+            <h3 className="empty-state-title">{t('common.nothingFound', 'Ничего не найдено')}</h3>
+            <p className="empty-state-description">{t('common.tryDifferentSearch', 'Попробуйте изменить поисковый запрос')}</p>
           </div>
         ) : (
           <div className="subjects-grid">

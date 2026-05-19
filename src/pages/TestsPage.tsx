@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase, type TestSet } from '../lib/supabase';
+import { useI18n } from '../lib/i18n';
 
 export default function TestsPage() {
+  const { t } = useI18n();
   const [testSets, setTestSets] = useState<TestSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'practice' | 'exam'>('all');
@@ -38,8 +40,8 @@ export default function TestsPage() {
     <main className="page-container">
       <div className="container">
         <div className="page-header">
-          <h1 className="page-title">Все тесты</h1>
-          <p className="page-subtitle">Выберите тест для прохождения</p>
+          <h1 className="page-title">{t('testsPage.title', 'Все тесты')}</h1>
+          <p className="page-subtitle">{t('testsPage.subtitle', 'Выберите тест для прохождения')}</p>
         </div>
 
         <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
@@ -47,19 +49,19 @@ export default function TestsPage() {
             className={`btn ${filter === 'all' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
             onClick={() => setFilter('all')}
           >
-            Все ({testSets.length})
+            {t('testsPage.all', 'Все')} ({testSets.length})
           </button>
           <button
             className={`btn ${filter === 'practice' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
             onClick={() => setFilter('practice')}
           >
-            Практика ({testSets.filter(t => t.settings?.mode === 'practice').length})
+            {t('testsPage.practice', 'Практика')} ({testSets.filter(t => t.settings?.mode === 'practice').length})
           </button>
           <button
             className={`btn ${filter === 'exam' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
             onClick={() => setFilter('exam')}
           >
-            Экзамен ({testSets.filter(t => t.settings?.mode === 'exam').length})
+            {t('testsPage.exam', 'Экзамен')} ({testSets.filter(t => t.settings?.mode === 'exam').length})
           </button>
         </div>
 
@@ -70,8 +72,8 @@ export default function TestsPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            <h3 className="empty-state-title">Нет тестов</h3>
-            <p className="empty-state-description">Тесты появятся здесь позже</p>
+            <h3 className="empty-state-title">{t('testsPage.noTests', 'Нет тестов')}</h3>
+            <p className="empty-state-description">{t('testsPage.noTestsDesc', 'Тесты появятся здесь позже')}</p>
           </div>
         ) : (
           <div className="tests-grid">
@@ -81,17 +83,17 @@ export default function TestsPage() {
                   <div className="test-card-header">
                     <div>
                       <h3 className="test-card-title">{test.name}</h3>
-                      <p className="test-card-desc">{test.description || 'Тест без описания'}</p>
+                      <p className="test-card-desc">{test.description || t('testsPage.noDescription', 'Тест без описания')}</p>
                     </div>
                     <span className={`badge ${test.settings?.mode === 'exam' ? 'badge-warning' : 'badge-success'}`}>
-                      {test.settings?.mode === 'exam' ? 'Экзамен' : 'Практика'}
+                      {test.settings?.mode === 'exam' ? t('common.exam', 'Экзамен') : t('common.practice', 'Практика')}
                     </span>
                   </div>
                   <div className="test-card-meta">
-                    <span>{test.question_ids?.length || 0} вопросов</span>
-                    <span>Проходной: {test.settings?.passing_score_pct || 70}%</span>
+                    <span>{test.question_ids?.length || 0} {t('common.questions', 'вопросов')}</span>
+                    <span>{t('common.passingScore', 'Проходной')}: {test.settings?.passing_score_pct || 70}%</span>
                   </div>
-                  <div className="btn btn-primary" style={{ width: '100%', marginTop: 16 }}>Начать тест</div>
+                  <div className="btn btn-primary" style={{ width: '100%', marginTop: 16 }}>{t('testsPage.startTest', 'Начать тест')}</div>
                 </div>
               </Link>
             ))}
