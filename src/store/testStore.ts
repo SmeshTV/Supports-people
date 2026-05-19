@@ -12,7 +12,7 @@ type TestStore = {
   lastAnswerCorrect: boolean | null;
 
   startTest: (testSet: TestSet, questions: Question[]) => void;
-  answerQuestion: (questionId: string, selectedIds: string[], isCorrect: boolean) => void;
+  answerQuestion: (questionId: string, selectedIds: string[], isCorrect: boolean, textAnswer?: string, orderAnswer?: string[], matchAnswer?: { left: string; right: string }[]) => void;
   nextQuestion: () => void;
   finishTest: () => void;
   resetTest: () => void;
@@ -45,12 +45,15 @@ export const useTestStore = create<TestStore>((set, get) => ({
     });
   },
 
-  answerQuestion: (questionId, selectedIds, isCorrect) => {
+  answerQuestion: (questionId: string, selectedIds: string[], isCorrect: boolean, textAnswer?: string, orderAnswer?: string[], matchAnswer?: { left: string; right: string }[]) => {
     const { answers, startedAt } = get();
     const timeTaken = startedAt ? Math.floor((Date.now() - startedAt.getTime()) / 1000) : 0;
     const answer: UserAnswer = {
       question_id: questionId,
       selected_option_ids: selectedIds,
+      text_answer: textAnswer,
+      order_answer: orderAnswer,
+      match_answer: matchAnswer,
       is_correct: isCorrect,
       time_taken_sec: timeTaken,
     };

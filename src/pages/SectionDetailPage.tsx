@@ -9,16 +9,22 @@ export default function SectionDetailPage() {
   const [testSet, setTestSet] = useState<TestSet | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'lecture' | 'content'>('lecture');
+  const [debugInfo, setDebugInfo] = useState<string>('');
 
   useEffect(() => {
     const fetchData = async () => {
       if (!sectionId) return;
 
-      const { data: sect } = await supabase
+      const { data: sect, error: sectError } = await supabase
         .from('sections')
         .select('*')
         .eq('id', sectionId)
         .maybeSingle();
+
+      if (sectError) {
+        console.error('Section fetch error:', sectError);
+        setDebugInfo(`Ошибка загрузки раздела: ${sectError.message}`);
+      }
 
       if (!sect) {
         setLoading(false);
@@ -28,13 +34,29 @@ export default function SectionDetailPage() {
       const sectionData = sect as Section;
       setSection(sectionData);
 
+      console.log('Section data:', sectionData);
+      console.log('test_set_id:', sectionData.test_set_id);
+
       if (sectionData.test_set_id) {
-        const { data: ts } = await supabase
+        const { data: ts, error: tsError } = await supabase
           .from('test_sets')
           .select('*')
           .eq('id', sectionData.test_set_id)
           .maybeSingle();
-        setTestSet(ts as TestSet);
+
+        if (tsError) {
+          console.error('Test set fetch error:', tsError);
+          setDebugInfo(`Ошибка загрузки теста: ${tsError.message}`);
+        } else if (ts) {
+          console.log('Test set found:', ts);
+          setTestSet(ts as TestSet);
+        } else {
+          console.warn('Test set not found for ID:', sectionData.test_set_id);
+          setDebugInfo(`Тест с ID ${sectionData.test_set_id} не найден`);
+        }
+      } else {
+        console.log('No test_set_id for this section');
+        setDebugInfo('К этому разделу не привязан тест');
       }
 
       setLoading(false);
@@ -150,6 +172,18 @@ export default function SectionDetailPage() {
                 </svg>
               </Link>
             </div>
+          </div>
+        )}
+
+        {debugInfo && (
+          <div style={{ marginTop: 24, padding: 16, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 8 }}>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>🔍 Отладка:</p>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{debugInfo}</p>
+            {section && (
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8 }}>
+                test_set_id: {section.test_set_id || 'null'}
+              </p>
+            )}
           </div>
         )}
       </div>

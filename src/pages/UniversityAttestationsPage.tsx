@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { supabase, type Discipline, type Attestation } from '../lib/supabase';
+import { supabase, type Discipline, type Attestation, type TestSet, type Section } from '../lib/supabase';
 
 const ATTESTATION_ICONS: Record<string, string> = {
   attestation1: '📋',
@@ -18,19 +18,25 @@ export default function UniversityAttestationsPage() {
   const { disciplineId } = useParams<{ disciplineId: string }>();
   const [discipline, setDiscipline] = useState<Discipline | null>(null);
   const [attestations, setAttestations] = useState<Attestation[]>([]);
+  const [testSets, setTestSets] = useState<TestSet[]>([]);
+  const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       if (!disciplineId) return;
       
-      const [{ data: disc }, { data: atts }] = await Promise.all([
+      const [{ data: disc }, { data: atts }, { data: tests }, { data: sects }] = await Promise.all([
         supabase.from('disciplines').select('*').eq('id', disciplineId).maybeSingle(),
-        supabase.from('attestations').select('*').eq('discipline_id', disciplineId).eq('is_active', true).order('order_index')
+        supabase.from('attestations').select('*').eq('discipline_id', disciplineId).eq('is_active', true).order('order_index'),
+        supabase.from('test_sets').select('*').eq('discipline_id', disciplineId).eq('is_published', true).order('created_at'),
+        supabase.from('sections').select('*').eq('discipline_id', disciplineId).eq('is_published', true).order('order_index'),
       ]);
       
       setDiscipline((disc as Discipline) || null);
       setAttestations((atts as Attestation[]) || []);
+      setTestSets((tests as TestSet[]) || []);
+      setSections((sects as Section[]) || []);
       setLoading(false);
     };
     fetchData();
@@ -105,7 +111,56 @@ export default function UniversityAttestationsPage() {
                   </div>
                 </div>
               </Link>
-            ))}
+              ))}
+          </div>
+        )}
+
+        {testSets.length > 0 && (
+          <div style={{ marginTop: 48 }}>
+            <h2 className="section-title" style={{ marginBottom: 24 }}>Тесты дисциплины</h2>
+            <div className="tests-grid">
+              {testSets.map((ts) => (
+                <Link key={ts.id} to={`/test/${ts.id}`} className="test-card">
+                  <div className="test-card-inner">
+                    <div className="test-card-header">
+                      <div>
+                        <h3 className="test-card-title">{ts.name}</h3>
+                        <p className="test-card-desc">{ts.description || 'Тест без описания'}</p>
+                      </div>
+                      <span className={`badge ${ts.settings?.mode === 'exam' ? 'badge-warning' : 'badge-success'}`}>
+                        {ts.settings?.mode === 'exam' ? 'Экзамен' : 'Практика'}
+                      </span>
+                    </div>
+                    <div className="test-card-meta">
+                      <span>{ts.question_ids?.length || 0} вопросов</span>
+                      <span>Проходной: {ts.settings?.passing_score_pct || 70}%</span>
+                    </div>
+                    <div className="btn btn-primary" style={{ width: '100%', marginTop: 16 }}>Начать тест</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {sections.length > 0 && (
+          <div style={{ marginTop: 48 }}>
+            <h2 className="section-title" style={{ marginBottom: 24 }}>Темы дисциплины</h2>
+            <div className="tests-grid">
+              {sections.map((s) => (
+                <Link key={s.id} to={`/section/${s.id}`} className="test-card">
+                  <div className="test-card-inner">
+                    <div className="test-card-header">
+                      <div>
+                        <h3 className="test-card-title">{s.name}</h3>
+                        <p className="test-card-desc">{s.description || 'Тема без описания'}</p>
+                      </div>
+                    </div>
+                    <div className="btn btn-primary" style={{ width: '100%', marginTop: 16 }}>Открыть тему</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>

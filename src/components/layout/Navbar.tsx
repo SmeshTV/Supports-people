@@ -49,6 +49,7 @@ export default function Navbar() {
           <div className="nav-links">
             <Link to="/directions" className="nav-link">Направления</Link>
             <Link to="/subjects" className="nav-link">{t('nav.subjects', 'Предметы')}</Link>
+            <Link to="/tests" className="nav-link">Тесты</Link>
             {user && <Link to="/dashboard" className="nav-link">{t('nav.dashboard', 'Панель')}</Link>}
             {user && <Link to="/bookmarks" className="nav-link">{t('nav.bookmarks', 'Закладки')}</Link>}
           </div>

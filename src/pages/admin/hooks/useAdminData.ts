@@ -54,7 +54,7 @@ export function getEntityIcon(type: string): string {
 }
 
 export function isFolderType(type: string): boolean {
-  return ['direction_type', 'direction', 'course', 'discipline', 'attestation'].includes(type);
+  return ['direction_type', 'direction', 'course', 'discipline', 'attestation', 'attestation_exam', 'section'].includes(type);
 }
 
 export function getQuestionCountForTest(entities: AdminEntity[], testId: string, _allQuestions: any[]): number {

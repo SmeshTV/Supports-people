@@ -13,13 +13,29 @@ export default function SchoolEntTopicDetailPage() {
     const fetchData = async () => {
       if (!topicId) return;
       
-      const [{ data: t }, { data: tests }] = await Promise.all([
-        supabase.from('sections').select('*').eq('id', topicId).maybeSingle(),
-        supabase.from('test_sets').select('*').eq('section_id', topicId).eq('is_published', true)
-      ]);
+      const { data: t } = await supabase
+        .from('sections')
+        .select('*')
+        .eq('id', topicId)
+        .maybeSingle();
       
-      setTopic((t as Section) || null);
-      setTestSets((tests as TestSet[]) || []);
+      const topicData = t as Section | null;
+      setTopic(topicData);
+      
+      // Fetch test_set by the section's test_set_id
+      if (topicData?.test_set_id) {
+        const { data: ts } = await supabase
+          .from('test_sets')
+          .select('*')
+          .eq('id', topicData.test_set_id)
+          .eq('is_published', true)
+          .maybeSingle();
+        
+        setTestSets(ts ? [ts as TestSet] : []);
+      } else {
+        setTestSets([]);
+      }
+      
       setLoading(false);
     };
     fetchData();

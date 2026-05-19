@@ -159,7 +159,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
           type: 'attestation_exam',
           name: e.name,
           icon: TYPE_ICONS.attestation_exam,
-          parentId: e.attestation_id,
+          parentId: e.parent_id || e.attestation_id,
           data: e,
           isPublished: e.is_published,
         });
@@ -171,7 +171,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
           type: 'section',
           name: s.name,
           icon: TYPE_ICONS.section,
-          parentId: s.discipline_id || s.direction_id || s.parent_id,
+          parentId: s.parent_id || s.discipline_id || s.direction_id,
           data: s,
           isPublished: s.is_published,
         });
@@ -196,7 +196,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
           type: 'test_set',
           name: t.name,
           icon: TYPE_ICONS.test_set,
-          parentId: tData.discipline_id || tData.direction_id || tData.category_id || null,
+          parentId: tData.parent_id || tData.discipline_id || tData.direction_id || tData.category_id || tData.course_id || null,
           data: t,
           isPublished: t.is_published,
         });

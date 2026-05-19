@@ -79,14 +79,14 @@ export default function FolderViewPage() {
       { data: articles },
       { data: tests },
     ] = await Promise.all([
-      supabase.from('directions').select('*').eq('direction_type', id).eq('is_published', true).order('order_index'),
-      supabase.from('courses').select('*').eq('direction_id', id).eq('is_published', true).order('order_index'),
-      supabase.from('disciplines').select('*').or(`course_id.eq.${id},direction_id.eq.${id}`).eq('is_published', true).order('order_index'),
-      supabase.from('attestations').select('*').eq('discipline_id', id).eq('is_active', true).order('order_index'),
-      supabase.from('attestation_exams').select('*').eq('attestation_id', id).eq('is_published', true).order('order_index'),
+      supabase.from('directions').select('*').or(`direction_type.eq.${id},parent_id.eq.${id}`).eq('is_published', true).order('order_index'),
+      supabase.from('courses').select('*').or(`direction_id.eq.${id},parent_id.eq.${id}`).eq('is_published', true).order('order_index'),
+      supabase.from('disciplines').select('*').or(`course_id.eq.${id},direction_id.eq.${id},parent_id.eq.${id}`).eq('is_published', true).order('order_index'),
+      supabase.from('attestations').select('*').or(`discipline_id.eq.${id},parent_id.eq.${id}`).eq('is_active', true).order('order_index'),
+      supabase.from('attestation_exams').select('*').or(`attestation_id.eq.${id},parent_id.eq.${id}`).eq('is_published', true).order('order_index'),
       supabase.from('sections').select('*').or(`discipline_id.eq.${id},direction_id.eq.${id},parent_id.eq.${id}`).eq('is_published', true).order('order_index'),
-      supabase.from('helper_articles').select('*').eq('parent_id', id).eq('is_published', true).order('order_index'),
-      supabase.from('test_sets').select('*').or(`category_id.eq.${id},discipline_id.eq.${id},direction_id.eq.${id}`).eq('is_published', true),
+      supabase.from('helper_articles').select('*').or(`parent_id.eq.${id}`).eq('is_published', true).order('order_index'),
+      supabase.from('test_sets').select('*').or(`category_id.eq.${id},discipline_id.eq.${id},direction_id.eq.${id},course_id.eq.${id},parent_id.eq.${id}`).eq('is_published', true),
     ]);
 
     const folderItems: FolderItem[] = [];
@@ -137,7 +137,7 @@ export default function FolderViewPage() {
     } else if (item.type === 'test_set') {
       navigate(`/test/${item.id}`);
     } else if (item.type === 'attestation_exam') {
-      navigate(`/university/exam/${item.id}`);
+      navigate(`/university/exam-detail/${item.id}`);
     }
   };
 

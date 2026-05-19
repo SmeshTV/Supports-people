@@ -36,7 +36,8 @@ export default function SubjectPage() {
       const { data: allTestSetsRaw } = await supabase
         .from('test_sets')
         .select('*')
-        .eq('subject_id', id);
+        .eq('subject_id', id)
+        .eq('is_published', true);
       
       setAllSubjects((allSubjects as Subject[]) ?? []);
       setSubject(s as Subject);
@@ -192,6 +193,34 @@ export default function SubjectPage() {
             </div>
           )}
         </div>
+
+        {testSets.length > 0 && (
+          <div style={{ marginTop: 48 }}>
+            <h2 className="section-title" style={{ marginBottom: 24 }}>Доступные тесты</h2>
+            <div className="tests-grid">
+              {testSets.map((ts) => (
+                <Link key={ts.id} to={`/test/${ts.id}`} className="test-card">
+                  <div className="test-card-inner">
+                    <div className="test-card-header">
+                      <div>
+                        <h3 className="test-card-title">{ts.name}</h3>
+                        <p className="test-card-desc">{ts.description || 'Тест без описания'}</p>
+                      </div>
+                      <span className={`badge ${ts.settings?.mode === 'exam' ? 'badge-warning' : 'badge-success'}`}>
+                        {ts.settings?.mode === 'exam' ? 'Экзамен' : 'Практика'}
+                      </span>
+                    </div>
+                    <div className="test-card-meta">
+                      <span>{ts.question_ids?.length || 0} вопросов</span>
+                      <span>Проходной: {ts.settings?.passing_score_pct || 70}%</span>
+                    </div>
+                    <div className="btn btn-primary" style={{ width: '100%', marginTop: 16 }}>Начать тест</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );

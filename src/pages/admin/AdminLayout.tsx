@@ -35,7 +35,7 @@ function AdminLayoutInner() {
   }
 
   return (
-    <div className="admin-layout">
+    <div className="admin-layout" style={{ paddingTop: 64 }}>
       {/* Left Sidebar */}
       <div className={`admin-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
         <AdminSidebar />

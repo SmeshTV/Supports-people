@@ -44,29 +44,82 @@ export default function ResultsPage() {
   const incorrectCount = (attempt.answers?.length || 0) - correctCount;
   const passed = percentage >= (testSet?.settings?.passing_score_pct ?? 70);
 
+  const getQuestionBodyText = (question: any): string => {
+    if (typeof question.body === 'string') return question.body;
+    return question.body?.text || '';
+  };
+
+  const getOptionText = (option: any): string => {
+    return option?.text || '';
+  };
+
+  const getCorrectText = (question: any): string => {
+    if (question.type === 'single' || question.type === 'multiple' || question.type === 'truefalse' || question.type === 'dropdown') {
+      const correctOptions = question.options?.filter((o: any) => question.correct_answers?.includes(o.id)) || [];
+      return correctOptions.map((o: any) => getOptionText(o)).join(', ');
+    }
+    if (question.type === 'fill' || question.type === 'short_answer') {
+      return question.correct_text || '—';
+    }
+    if (question.type === 'numeric') {
+      return question.correct_text || '—';
+    }
+    if (question.type === 'ordering') {
+      return (question.correct_order || []).join(' → ');
+    }
+    if (question.type === 'matching') {
+      return (question.correct_pairs || []).map((p: any) => `${p.left} → ${p.right}`).join('; ');
+    }
+    if (question.type === 'cloze') {
+      return question.correct_text || '—';
+    }
+    return '—';
+  };
+
+  const getUserAnswerText = (question: any, answer: any): string => {
+    if (!answer) return '—';
+    if (question.type === 'single' || question.type === 'multiple' || question.type === 'truefalse' || question.type === 'dropdown') {
+      const selectedOptions = question.options?.filter((o: any) => answer.selected_option_ids?.includes(o.id)) || [];
+      return selectedOptions.map((o: any) => getOptionText(o)).join(', ');
+    }
+    if (question.type === 'fill' || question.type === 'numeric' || question.type === 'short_answer' || question.type === 'essay' || question.type === 'cloze') {
+      return answer.text_answer || '—';
+    }
+    if (question.type === 'ordering') {
+      return (answer.order_answer || []).join(' → ');
+    }
+    if (question.type === 'matching') {
+      return (answer.match_answer || []).map((p: any) => `${p.left} → ${p.right}`).join('; ');
+    }
+    return '—';
+  };
+
   return (
     <div className="results-page">
       <div className="container">
         <div style={{ maxWidth: '640px', margin: '0 auto' }}>
-          <div className="card" style={{ textAlign: 'center', marginBottom: '24px', padding: '48px', overflow: 'hidden', position: 'relative' }}>
+          <div className="card" style={{ textAlign: 'center', marginBottom: '24px', padding: '48px', position: 'relative', overflow: 'hidden' }}>
             <div style={{ 
               position: 'absolute', 
-              inset: 0, 
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
               background: passed 
-                ? 'linear-gradient(135deg, var(--success-soft) 0%, rgba(34, 197, 94, 0.1) 100%)' 
-                : 'linear-gradient(135deg, var(--danger-soft) 0%, rgba(239, 68, 68, 0.1) 100%)' 
+                ? 'linear-gradient(135deg, var(--success-soft) 0%, rgba(34, 197, 94, 0.05) 100%)' 
+                : 'linear-gradient(135deg, var(--danger-soft) 0%, rgba(239, 68, 68, 0.05) 100%)',
+              zIndex: 0
             }} />
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', zIndex: 1 }}>
               <span className={`badge ${passed ? 'badge-success' : 'badge-danger'}`} style={{ marginBottom: '20px', fontSize: '14px', padding: '8px 20px' }}>
                 {passed ? 'ПРОЙДЕНО' : 'НЕ ПРОЙДЕНО'}
               </span>
               <div style={{ 
                 fontSize: '72px', 
                 fontWeight: 800, 
-                background: 'var(--gradient-1)', 
-                WebkitBackgroundClip: 'text', 
-                WebkitTextFillColor: 'transparent',
-                marginBottom: '8px' 
+                color: passed ? 'var(--success)' : 'var(--danger)',
+                marginBottom: '8px',
+                lineHeight: 1
               }}>
                 {percentage}%
               </div>
@@ -142,6 +195,8 @@ export default function ResultsPage() {
                 {questions.map((question, i) => {
                   const answer = attempt.answers?.find((a: any) => a.question_id === question.id);
                   const isCorrect = answer?.is_correct;
+                  const userAnswer = getUserAnswerText(question, answer);
+                  const correctAnswer = getCorrectText(question);
                   
                   return (
                     <div key={question.id} className="card" style={{ borderLeft: `4px solid ${isCorrect ? 'var(--success)' : 'var(--danger)'}` }}>
@@ -173,14 +228,26 @@ export default function ResultsPage() {
                             <span className={`badge ${question.difficulty === 'easy' ? 'badge-success' : question.difficulty === 'hard' ? 'badge-warning' : 'badge-info'}`}>
                               {question.difficulty === 'easy' ? 'Легко' : question.difficulty === 'hard' ? 'Сложно' : 'Средне'}
                             </span>
+                            <span className="badge">{question.points} балл</span>
                           </div>
-                          <p style={{ fontSize: '16px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '12px' }}>{question.body.text}</p>
+                          <p style={{ fontSize: '16px', fontWeight: 500, color: 'var(--text-primary)', marginBottom: '12px' }} dangerouslySetInnerHTML={{ __html: getQuestionBodyText(question) }} />
+                          
                           {!isCorrect && (
-                            <div style={{ marginBottom: '12px', padding: '12px', background: 'var(--success-soft)', borderRadius: '8px' }}>
-                              <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Правильный ответ:</p>
-                              <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--success)' }}>
-                                {question.options.find((o: any) => question.correct_answers.includes(o.id))?.text || 'N/A'}
-                              </p>
+                            <>
+                              <div style={{ marginBottom: '8px', padding: '12px', background: 'var(--danger-soft)', borderRadius: '8px', border: '1px solid var(--danger)' }}>
+                                <p style={{ fontSize: '12px', color: 'var(--danger)', marginBottom: '4px', fontWeight: 600 }}>Ваш ответ:</p>
+                                <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{userAnswer || '—'}</p>
+                              </div>
+                              <div style={{ marginBottom: '12px', padding: '12px', background: 'var(--success-soft)', borderRadius: '8px', border: '1px solid var(--success)' }}>
+                                <p style={{ fontSize: '12px', color: 'var(--success)', marginBottom: '4px', fontWeight: 600 }}>Правильный ответ:</p>
+                                <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--success)' }}>{correctAnswer}</p>
+                              </div>
+                            </>
+                          )}
+                          {isCorrect && (
+                            <div style={{ marginBottom: '12px', padding: '12px', background: 'var(--success-soft)', borderRadius: '8px', border: '1px solid var(--success)' }}>
+                              <p style={{ fontSize: '12px', color: 'var(--success)', marginBottom: '4px', fontWeight: 600 }}>Ваш ответ (правильный):</p>
+                              <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{userAnswer}</p>
                             </div>
                           )}
                           {question.explanation?.text && (
@@ -191,7 +258,7 @@ export default function ResultsPage() {
                               border: '1px solid var(--border)' 
                             }}>
                               <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Объяснение:</p>
-                              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{question.explanation.text}</p>
+                              <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: question.explanation.text }} />
                               {(question.explanation as any)?.image_url && (
                                 <img src={(question.explanation as any).image_url} alt="Explanation" style={{ maxWidth: '100%', maxHeight: 200, marginTop: 8, borderRadius: 8 }} />
                               )}

@@ -6,6 +6,7 @@ import AuthModal from './components/auth/AuthModal';
 import HomePage from './pages/HomePage';
 import SubjectsPage from './pages/SubjectsPage';
 import SubjectPage from './pages/SubjectPage';
+import TestsPage from './pages/TestsPage';
 import TestPage from './pages/TestPage';
 import ResultsPage from './pages/ResultsPage';
 import DashboardPage from './pages/DashboardPage';
@@ -21,6 +22,7 @@ import UniversityCoursesPage from './pages/UniversityCoursesPage';
 import UniversityDisciplinesPage from './pages/UniversityDisciplinesPage';
 import UniversityAttestationsPage from './pages/UniversityAttestationsPage';
 import UniversityExamPage from './pages/UniversityExamPage';
+import UniversityExamDetailPage from './pages/UniversityExamDetailPage';
 import ExamsPage from './pages/ExamsPage';
 import TrashPage from './pages/TrashPage';
 import SectionDetailPage from './pages/SectionDetailPage';
@@ -47,6 +49,8 @@ export default function App() {
         <Route path="/subjects" element={<SubjectsPage />} />
         <Route path="/subjects/:id" element={<SubjectPage />} />
         
+        <Route path="/tests" element={<TestsPage />} />
+        
         <Route path="/directions" element={<DirectionsPage />} />
         <Route path="/directions/:type" element={<DirectionPage />} />
         
@@ -63,6 +67,7 @@ export default function App() {
         <Route path="/university/disciplines/:courseId" element={<UniversityDisciplinesPage />} />
         <Route path="/university/attestations/:disciplineId" element={<UniversityAttestationsPage />} />
         <Route path="/university/exam/:attestationId" element={<UniversityExamPage />} />
+        <Route path="/university/exam-detail/:examId" element={<UniversityExamDetailPage />} />
         
         <Route path="/courses" element={<UniversityCoursesPage />} />
         <Route path="/courses/:directionId" element={<UniversityCoursesPage />} />

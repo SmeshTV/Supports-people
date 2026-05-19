@@ -8,6 +8,7 @@ export type Breadcrumb = {
 
 type SelectionContextValue = {
   currentFolderId: string | null;
+  currentFolderType: string | null;
   selectedEntityId: string | null;
   breadcrumbs: Breadcrumb[];
   sidebarOpen: boolean;
@@ -30,6 +31,7 @@ const SelectionContext = createContext<SelectionContextValue | null>(null);
 
 export function SelectionProvider({ children }: { children: ReactNode }) {
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
+  const [currentFolderType, setCurrentFolderType] = useState<string | null>(null);
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
   const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[]>([
     { id: 'root', name: 'Корень', type: 'root' }
@@ -42,6 +44,7 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
 
   const navigateToFolder = useCallback((id: string, name: string, type: string) => {
     setCurrentFolderId(id);
+    setCurrentFolderType(type);
     setSelectedEntityId(null);
     setBreadcrumbs(prev => [...prev, { id, name, type }]);
     setPropertiesOpen(false);
@@ -51,6 +54,7 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
     const bc = breadcrumbs[index];
     setBreadcrumbs(breadcrumbs.slice(0, index + 1));
     setCurrentFolderId(bc.id === 'root' ? null : bc.id);
+    setCurrentFolderType(bc.type === 'root' ? null : bc.type);
     setSelectedEntityId(null);
     setPropertiesOpen(false);
   }, [breadcrumbs]);
@@ -75,6 +79,7 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
 
   const reset = useCallback(() => {
     setCurrentFolderId(null);
+    setCurrentFolderType(null);
     setSelectedEntityId(null);
     setBreadcrumbs([{ id: 'root', name: 'Корень', type: 'root' }]);
     setPropertiesOpen(false);
@@ -85,6 +90,7 @@ export function SelectionProvider({ children }: { children: ReactNode }) {
   return (
     <SelectionContext.Provider value={{
       currentFolderId,
+      currentFolderType,
       selectedEntityId,
       breadcrumbs,
       sidebarOpen,

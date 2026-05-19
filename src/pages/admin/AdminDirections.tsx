@@ -11,7 +11,7 @@ export default function AdminDirections() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    direction_type: 'ent' as 'ent' | 'university' | 'school',
+    direction_type: 'school' as 'school' | 'university' | 'helper',
     icon: 'book',
     color: '#6366f1'
   });
@@ -41,7 +41,7 @@ export default function AdminDirections() {
 
     setShowModal(false);
     setEditingItem(null);
-    setFormData({ name: '', description: '', direction_type: 'ent', icon: 'book', color: '#6366f1' });
+    setFormData({ name: '', description: '', direction_type: 'school', icon: 'book', color: '#6366f1' });
     fetchData();
   };
 
@@ -74,7 +74,7 @@ export default function AdminDirections() {
           <h2>Направления</h2>
           <p className="text-muted">ЕНТ, Университет, Школа</p>
         </div>
-        <button className="btn btn-primary" onClick={() => { setEditingItem(null); setFormData({ name: '', description: '', direction_type: 'ent', icon: 'book', color: '#6366f1' }); setShowModal(true); }}>
+        <button className="btn btn-primary" onClick={() => { setEditingItem(null); setFormData({ name: '', description: '', direction_type: 'school', icon: 'book', color: '#6366f1' }); setShowModal(true); }}>
           + Добавить направление
         </button>
       </div>

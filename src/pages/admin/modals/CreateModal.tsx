@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelection } from '../context/SelectionContext';
 import { useCreateItem, getDefaultFormData } from '../hooks/useCreateItem';
+import { supabase } from '../../../lib/supabase';
 
 const CREATE_OPTIONS = [
   { type: 'direction', label: 'Папку', icon: '📂' },
@@ -19,22 +20,33 @@ type CreateModalProps = {
 };
 
 export function CreateModal({ isOpen, onClose }: CreateModalProps) {
-  const { currentFolderId, setShowCreateMenu } = useSelection();
+  const { currentFolderId, currentFolderType, setShowCreateMenu } = useSelection();
   const createItem = useCreateItem();
   const [step, setStep] = useState<'select' | 'form'>('select');
   const [selectedType, setSelectedType] = useState('');
   const [formData, setFormData] = useState<any>({});
   const [saving, setSaving] = useState(false);
+  const [availableTests, setAvailableTests] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (isOpen && selectedType === 'attestation_exam') {
+      supabase.from('test_sets').select('id, name').eq('is_published', true).order('name').then(({ data }) => {
+        setAvailableTests((data as any[]) || []);
+      });
+    }
+  }, [isOpen, selectedType]);
 
   if (!isOpen) return null;
 
   const handleSelectType = (type: string) => {
+    console.log('CreateModal: Creating', type, 'in folder', currentFolderId, 'type:', currentFolderType);
     setSelectedType(type);
-    setFormData(getDefaultFormData(type, currentFolderId));
+    setFormData(getDefaultFormData(type, currentFolderId, currentFolderType));
     setStep('form');
   };
 
   const handleSave = async () => {
+    console.log('CreateModal: Saving', selectedType, 'with data:', formData);
     setSaving(true);
     const success = await createItem(selectedType, currentFolderId, formData);
     setSaving(false);
@@ -60,6 +72,11 @@ export function CreateModal({ isOpen, onClose }: CreateModalProps) {
         </div>
 
         <div className="modal-body">
+          {currentFolderId && (
+            <div style={{ marginBottom: 16, padding: '8px 12px', background: 'var(--bg-secondary, #f5f5f5)', borderRadius: 8, fontSize: 13, border: '1px solid var(--border, #e5e5e5)' }}>
+              📍 Создаётся в: <strong>{currentFolderType || 'корень'}</strong>
+            </div>
+          )}
           {step === 'select' && (
             <div className="create-type-grid">
               {CREATE_OPTIONS.map(opt => (
@@ -96,6 +113,7 @@ export function CreateModal({ isOpen, onClose }: CreateModalProps) {
                   >
                     <option value="school">Школа</option>
                     <option value="university">Университет</option>
+                    <option value="helper">Вспомогательные предметы</option>
                   </select>
                 </div>
               )}
@@ -137,18 +155,46 @@ export function CreateModal({ isOpen, onClose }: CreateModalProps) {
               )}
 
               {selectedType === 'attestation_exam' && (
-                <div className="form-group">
-                  <label>Тип экзамена</label>
-                  <select
-                    value={formData.exam_type || 'intermediate'}
-                    onChange={e => setFormData({ ...formData, exam_type: e.target.value })}
-                  >
-                    <option value="intermediate">Промежуточный</option>
-                    <option value="midterm">Midterm</option>
-                    <option value="endterm">Endterm</option>
-                    <option value="test">Тест</option>
-                  </select>
-                </div>
+                <>
+                  <div className="form-group">
+                    <label>Тип экзамена</label>
+                    <select
+                      value={formData.exam_type || 'intermediate'}
+                      onChange={e => setFormData({ ...formData, exam_type: e.target.value })}
+                    >
+                      <option value="intermediate">Промежуточный</option>
+                      <option value="midterm">Midterm</option>
+                      <option value="endterm">Endterm</option>
+                      <option value="test">Тест</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Привязать тест (необязательно)</label>
+                    <select
+                      value={formData.test_set_id || ''}
+                      onChange={e => setFormData({ ...formData, test_set_id: e.target.value || null })}
+                    >
+                      <option value="">Без теста</option>
+                      {availableTests.map(t => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                      Сначала создайте тест, затем привяжите его здесь
+                    </p>
+                  </div>
+                  <div className="form-group">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={formData.has_lectures || false}
+                        onChange={e => setFormData({ ...formData, has_lectures: e.target.checked })}
+                        style={{ marginRight: 8 }}
+                      />
+                      Есть лекции
+                    </label>
+                  </div>
+                </>
               )}
 
               {selectedType === 'test_set' && (

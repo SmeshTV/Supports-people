@@ -1,20 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase, type Course } from '../lib/supabase';
+import { supabase, type Course, type TestSet } from '../lib/supabase';
 
 export default function UniversityCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
+  const [testSets, setTestSets] = useState<TestSet[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('is_published', true)
-        .order('order_index');
+      const [{ data: coursesData }, { data: testsData }] = await Promise.all([
+        supabase.from('courses').select('*').eq('is_published', true).order('order_index'),
+        supabase.from('test_sets').select('*').eq('is_published', true).order('created_at')
+      ]);
       
-      setCourses((data as Course[]) || []);
+      setCourses((coursesData as Course[]) || []);
+      setTestSets((testsData as TestSet[]) || []);
       setLoading(false);
     };
     fetchData();
@@ -72,7 +73,35 @@ export default function UniversityCoursesPage() {
                   <p className="course-desc">{course.short_name || `Курс ${course.order_index}`}</p>
                 </div>
               </Link>
-            ))}
+              ))}
+          </div>
+        )}
+
+        {testSets.length > 0 && (
+          <div style={{ marginTop: 48 }}>
+            <h2 className="section-title" style={{ marginBottom: 24 }}>Все тесты университета</h2>
+            <div className="tests-grid">
+              {testSets.map((ts) => (
+                <Link key={ts.id} to={`/test/${ts.id}`} className="test-card">
+                  <div className="test-card-inner">
+                    <div className="test-card-header">
+                      <div>
+                        <h3 className="test-card-title">{ts.name}</h3>
+                        <p className="test-card-desc">{ts.description || 'Тест без описания'}</p>
+                      </div>
+                      <span className={`badge ${ts.settings?.mode === 'exam' ? 'badge-warning' : 'badge-success'}`}>
+                        {ts.settings?.mode === 'exam' ? 'Экзамен' : 'Практика'}
+                      </span>
+                    </div>
+                    <div className="test-card-meta">
+                      <span>{ts.question_ids?.length || 0} вопросов</span>
+                      <span>Проходной: {ts.settings?.passing_score_pct || 70}%</span>
+                    </div>
+                    <div className="btn btn-primary" style={{ width: '100%', marginTop: 16 }}>Начать тест</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>

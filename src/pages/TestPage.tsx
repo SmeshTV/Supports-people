@@ -257,7 +257,7 @@ export default function TestPage() {
     if (question.type === 'matching' && matchAnswer.some(m => !m.right.trim())) return;
 
     const isCorrect = checkAnswer(question, selectedIds, textAnswer, orderAnswer, matchAnswer, language);
-    answerQuestion(question.id, selectedIds, isCorrect);
+    answerQuestion(question.id, selectedIds, isCorrect, textAnswer, orderAnswer, matchAnswer);
   }, [selectedIds, textAnswer, orderAnswer, matchAnswer, questions, currentIndex, answerQuestion]);
 
   const handleNext = useCallback(() => {
@@ -503,7 +503,7 @@ export default function TestPage() {
           )}
 
           {/* Fill / Numeric / Short Answer / Essay / Cloze */}
-          {needsTextAnswer && !showExplanation && !alreadyAnswered && (
+          {needsTextAnswer && (
             <div className="text-answer-section">
               {question.type === 'essay' ? (
                 <textarea
@@ -512,6 +512,8 @@ export default function TestPage() {
                   placeholder="Напишите развёрнутый ответ..."
                   rows={8}
                   className="text-answer-input"
+                  readOnly={!!(showExplanation || alreadyAnswered)}
+                  style={showExplanation || alreadyAnswered ? { opacity: 0.7, cursor: 'default' } : {}}
                 />
               ) : (
                 <input
@@ -525,21 +527,41 @@ export default function TestPage() {
                     'Введите ответ...'
                   }
                   className="text-answer-input"
+                  readOnly={!!(showExplanation || alreadyAnswered)}
+                  style={showExplanation || alreadyAnswered ? { opacity: 0.7, cursor: 'default' } : {}}
                 />
               )}
-              {question.type === 'cloze' && <p className="form-hint">Введите ответы для каждого пропуска, разделяя их символом ||</p>}
+              {question.type === 'cloze' && !showExplanation && !alreadyAnswered && <p className="form-hint">Введите ответы для каждого пропуска, разделяя их символом ||</p>}
             </div>
           )}
 
           {/* Show correct answer after explanation for text types */}
           {(showExplanation || alreadyAnswered) && needsTextAnswer && (
-            <div className="correct-answer-display">
-              <p>Правильный ответ: <strong>{question.correct_text || '—'}</strong></p>
+            <div style={{ marginTop: 16 }}>
+              {(() => {
+                const userAns = textAnswer.trim().toLowerCase();
+                const correctAns = (question.correct_text || '').trim().toLowerCase();
+                const isCorrect = userAns === correctAns;
+                return (
+                  <>
+                    <div style={{ padding: '12px', background: isCorrect ? 'var(--success-soft)' : 'var(--danger-soft)', borderRadius: '8px', border: `1px solid ${isCorrect ? 'var(--success)' : 'var(--danger)'}`, marginBottom: 8 }}>
+                      <p style={{ fontSize: '12px', color: isCorrect ? 'var(--success)' : 'var(--danger)', marginBottom: '4px', fontWeight: 600 }}>Ваш ответ:</p>
+                      <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)' }}>{textAnswer || '—'}</p>
+                    </div>
+                    {!isCorrect && (
+                      <div style={{ padding: '12px', background: 'var(--success-soft)', borderRadius: '8px', border: '1px solid var(--success)' }}>
+                        <p style={{ fontSize: '12px', color: 'var(--success)', marginBottom: '4px', fontWeight: 600 }}>Правильный ответ:</p>
+                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--success)' }}>{question.correct_text || '—'}</p>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
 
           {/* Ordering */}
-          {needsOrdering && !showExplanation && !alreadyAnswered && (
+          {needsOrdering && (
             <div className="ordering-test-section">
               <p className="ordering-instruction">Расставьте элементы в правильном порядке:</p>
               <div className="ordering-test-list">
@@ -547,7 +569,7 @@ export default function TestPage() {
                   const orderIdx = orderAnswer.indexOf(item);
                   if (orderIdx === -1) {
                     return (
-                      <div key={item} className="ordering-test-item" onClick={() => setOrderAnswer(prev => [...prev, item])}>
+                      <div key={item} className="ordering-test-item" onClick={() => !(showExplanation || alreadyAnswered) && setOrderAnswer(prev => [...prev, item])} style={{ cursor: showExplanation || alreadyAnswered ? 'default' : 'pointer', opacity: showExplanation || alreadyAnswered ? 0.7 : 1 }}>
                         {item}
                       </div>
                     );
@@ -557,59 +579,77 @@ export default function TestPage() {
               </div>
               <h4 style={{ marginTop: 20, marginBottom: 10 }}>Ваш порядок:</h4>
               <div className="ordering-test-placed">
-                {orderAnswer.map((item, i) => (
-                  <div key={item} className="ordering-test-placed-item" onClick={() => setOrderAnswer(prev => prev.filter(v => v !== item))}>
-                    <span className="ordering-placed-num">{i + 1}</span>
-                    {item}
-                    <span className="ordering-remove">×</span>
-                  </div>
-                ))}
+                {orderAnswer.map((item, i) => {
+                  const correctOrder = question.correct_order || [];
+                  const isCorrectPosition = correctOrder[i] === item;
+                  return (
+                    <div key={item} className="ordering-test-placed-item" style={{ borderLeft: `4px solid ${(showExplanation || alreadyAnswered) ? (isCorrectPosition ? 'var(--success)' : 'var(--danger)') : 'var(--border)'}` }}>
+                      <span className="ordering-placed-num">{i + 1}</span>
+                      {item}
+                      {!(showExplanation || alreadyAnswered) && <span className="ordering-remove" onClick={() => setOrderAnswer(prev => prev.filter(v => v !== item))}>×</span>}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* Ordering correct display */}
           {(showExplanation || alreadyAnswered) && needsOrdering && (
-            <div className="correct-answer-display">
-              <p>Правильный порядок:</p>
-              <ol className="correct-order-list">
-                {(question.correct_order || []).map((item, i) => (
-                  <li key={i}>{item}</li>
-                ))}
-              </ol>
+            <div style={{ marginTop: 16 }}>
+              <div style={{ padding: '12px', background: 'var(--success-soft)', borderRadius: '8px', border: '1px solid var(--success)' }}>
+                <p style={{ fontSize: '12px', color: 'var(--success)', marginBottom: '8px', fontWeight: 600 }}>Правильный порядок:</p>
+                <ol style={{ margin: 0, paddingLeft: 20 }}>
+                  {(question.correct_order || []).map((item, i) => (
+                    <li key={i} style={{ fontSize: 14, marginBottom: 4 }}>{item}</li>
+                  ))}
+                </ol>
+              </div>
             </div>
           )}
 
           {/* Matching */}
-          {needsMatching && !showExplanation && !alreadyAnswered && (
+          {needsMatching && (
             <div className="matching-test-section">
               <p className="matching-instruction">Соедините элементы из левой колонки с правой:</p>
               <div className="matching-test-grid">
                 <div className="matching-test-col">
                   <h4>Левая колонка</h4>
-                  {matchAnswer.map((m, i) => (
-                    <div key={i} className="matching-test-left">{m.left}</div>
-                  ))}
+                  {matchAnswer.map((m, i) => {
+                    const correctPair = (question.correct_pairs || []).find((p: any) => p.left === m.left);
+                    const isCorrect = correctPair && correctPair.right === m.right;
+                    return (
+                      <div key={i} className="matching-test-left" style={showExplanation || alreadyAnswered ? { borderLeft: `4px solid ${isCorrect ? 'var(--success)' : 'var(--danger)'}` } : {}}>
+                        {m.left}
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="matching-test-col">
                   <h4>Правая колонка</h4>
-                  {matchAnswer.map((m, i) => (
-                    <select
-                      key={i}
-                      value={m.right}
-                      onChange={e => {
-                        const newMatch = [...matchAnswer];
-                        newMatch[i] = { ...newMatch[i], right: e.target.value };
-                        setMatchAnswer(newMatch);
-                      }}
-                      className="matching-test-select"
-                    >
-                      <option value="">Выберите...</option>
-                      {matchRightShuffled.map((opt, j) => (
-                        <option key={j} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  ))}
+                  {matchAnswer.map((m, i) => {
+                    const correctPair = (question.correct_pairs || []).find((p: any) => p.left === m.left);
+                    const isCorrect = correctPair && correctPair.right === m.right;
+                    return (
+                      <select
+                        key={i}
+                        value={m.right}
+                        onChange={e => {
+                          const newMatch = [...matchAnswer];
+                          newMatch[i] = { ...newMatch[i], right: e.target.value };
+                          setMatchAnswer(newMatch);
+                        }}
+                        className="matching-test-select"
+                        disabled={!!(showExplanation || alreadyAnswered)}
+                        style={showExplanation || alreadyAnswered ? { border: `2px solid ${isCorrect ? 'var(--success)' : 'var(--danger)'}`, background: isCorrect ? 'var(--success-soft)' : 'var(--danger-soft)', opacity: 0.8 } : {}}
+                      >
+                        <option value="">Выберите...</option>
+                        {matchRightShuffled.map((opt, j) => (
+                          <option key={j} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -617,16 +657,18 @@ export default function TestPage() {
 
           {/* Matching correct display */}
           {(showExplanation || alreadyAnswered) && needsMatching && (
-            <div className="correct-answer-display">
-              <p>Правильные соответствия:</p>
-              <div className="matching-correct-list">
-                {(question.correct_pairs || []).map((pair, i) => (
-                  <div key={i} className="matching-correct-item">
-                    <span className="matching-correct-left">{pair.left}</span>
-                    <span className="matching-correct-arrow">→</span>
-                    <span className="matching-correct-right">{pair.right}</span>
-                  </div>
-                ))}
+            <div style={{ marginTop: 16 }}>
+              <div style={{ padding: '12px', background: 'var(--success-soft)', borderRadius: '8px', border: '1px solid var(--success)' }}>
+                <p style={{ fontSize: '12px', color: 'var(--success)', marginBottom: '8px', fontWeight: 600 }}>Правильные соответствия:</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {(question.correct_pairs || []).map((pair: any, i: number) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
+                      <span style={{ fontWeight: 600 }}>{pair.left}</span>
+                      <span style={{ color: 'var(--success)' }}>→</span>
+                      <span>{pair.right}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -657,8 +699,8 @@ export default function TestPage() {
             <div style={{
               borderRadius: '12px',
               padding: '24px',
-              border: `2px solid ${lastAnswerCorrect ?? alreadyAnswered?.is_correct ? 'var(--success)' : 'var(--danger)'}`,
-              background: lastAnswerCorrect ?? alreadyAnswered?.is_correct ? 'var(--success-soft)' : 'var(--danger-soft)',
+              border: `2px solid ${(lastAnswerCorrect ?? alreadyAnswered?.is_correct) ? 'var(--success)' : 'var(--danger)'}`,
+              background: (lastAnswerCorrect ?? alreadyAnswered?.is_correct) ? 'var(--success-soft)' : 'var(--danger-soft)',
               marginTop: '24px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
@@ -669,18 +711,18 @@ export default function TestPage() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: lastAnswerCorrect ?? alreadyAnswered?.is_correct ? 'var(--success)' : 'var(--danger)',
+                  background: (lastAnswerCorrect ?? alreadyAnswered?.is_correct) ? 'var(--success)' : 'var(--danger)',
                   color: 'white',
                   fontSize: '20px'
                 }}>
-                  {lastAnswerCorrect ?? alreadyAnswered?.is_correct ? '✓' : '✗'}
+                  {(lastAnswerCorrect ?? alreadyAnswered?.is_correct) ? '✓' : '✗'}
                 </div>
                 <span style={{
                   fontSize: '20px',
                   fontWeight: 700,
-                  color: lastAnswerCorrect ?? alreadyAnswered?.is_correct ? 'var(--success)' : 'var(--danger)'
+                  color: (lastAnswerCorrect ?? alreadyAnswered?.is_correct) ? 'var(--success)' : 'var(--danger)'
                 }}>
-                  {lastAnswerCorrect ?? alreadyAnswered?.is_correct ? 'Правильно!' : 'Неправильно'}
+                  {(lastAnswerCorrect ?? alreadyAnswered?.is_correct) ? 'Правильно!' : 'Неправильно'}
                 </span>
               </div>
               {question.explanation && (

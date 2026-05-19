@@ -86,6 +86,10 @@ export type TestSet = {
   id: string;
   subject_id: string | null;
   category_id?: string | null;
+  direction_id?: string | null;
+  discipline_id?: string | null;
+  course_id?: string | null;
+  parent_id?: string | null;
   name: string;
   name_translations?: Record<string, string>;
   description: string;
@@ -102,6 +106,9 @@ export type TestSet = {
 export type UserAnswer = {
   question_id: string;
   selected_option_ids: string[];
+  text_answer?: string;
+  order_answer?: string[];
+  match_answer?: { left: string; right: string }[];
   is_correct: boolean;
   time_taken_sec: number;
 };
@@ -131,7 +138,7 @@ export type UserProfile = {
 
 export type DirectionType = {
   id: string;
-  type: 'school' | 'university';
+  type: 'school' | 'university' | 'helper';
   name_ru: string;
   name_kz: string;
   description: string;
@@ -171,13 +178,14 @@ export type Session = {
 
 export type Direction = {
   id: string;
-  direction_type: 'school' | 'university';
+  direction_type: 'school' | 'university' | 'helper';
   name: string;
   name_translations?: Record<string, string>;
   description: string;
   description_translations?: Record<string, string>;
   icon: string;
   color: string;
+  parent_id: string | null;
   order_index: number;
   is_published: boolean;
   created_by: string | null;
@@ -188,6 +196,7 @@ export type Direction = {
 export type Course = {
   id: string;
   direction_id: string | null;
+  parent_id: string | null;
   name: string;
   name_translations?: Record<string, string>;
   short_name: string;
@@ -204,6 +213,7 @@ export type Discipline = {
   id: string;
   direction_id: string | null;
   course_id: string | null;
+  parent_id: string | null;
   name: string;
   name_translations?: Record<string, string>;
   description: string;
@@ -218,6 +228,7 @@ export type Discipline = {
 export type Attestation = {
   id: string;
   discipline_id: string | null;
+  parent_id: string | null;
   name: string;
   name_translations?: Record<string, string>;
   attestation_type: 'attestation1' | 'attestation2' | 'session';
@@ -230,6 +241,7 @@ export type Attestation = {
 export type AttestationExam = {
   id: string;
   attestation_id: string | null;
+  parent_id: string | null;
   name: string;
   name_translations?: Record<string, string>;
   exam_type: 'intermediate' | 'midterm' | 'endterm' | 'test';
@@ -368,4 +380,84 @@ export async function moveToTrash(supabase: any, type: string, id: string, paren
   });
 
   await supabase.from(table).delete().eq('id', id);
+
+  // Cascade delete: find all children and move them to trash too
+  await cascadeDeleteToTrash(supabase, type, id, expiresAt);
+}
+
+async function cascadeDeleteToTrash(supabase: any, parentType: string, parentId: string, expiresAt: string) {
+  const childQueries: { type: string; table: string; query: any }[] = [];
+
+  switch (parentType) {
+    case 'direction_type':
+      childQueries.push({ type: 'direction', table: 'directions', query: supabase.from('directions').select('*').eq('direction_type', parentId) });
+      break;
+    case 'direction':
+      childQueries.push({ type: 'course', table: 'courses', query: supabase.from('courses').select('*').eq('direction_id', parentId) });
+      childQueries.push({ type: 'discipline', table: 'disciplines', query: supabase.from('disciplines').select('*').eq('direction_id', parentId) });
+      childQueries.push({ type: 'section', table: 'sections', query: supabase.from('sections').select('*').eq('direction_id', parentId) });
+      childQueries.push({ type: 'test_set', table: 'test_sets', query: supabase.from('test_sets').select('*').eq('direction_id', parentId) });
+      childQueries.push({ type: 'helper_article', table: 'helper_articles', query: supabase.from('helper_articles').select('*').eq('parent_id', parentId) });
+      break;
+    case 'course':
+      childQueries.push({ type: 'discipline', table: 'disciplines', query: supabase.from('disciplines').select('*').eq('course_id', parentId) });
+      childQueries.push({ type: 'test_set', table: 'test_sets', query: supabase.from('test_sets').select('*').eq('course_id', parentId) });
+      break;
+    case 'discipline':
+      childQueries.push({ type: 'attestation', table: 'attestations', query: supabase.from('attestations').select('*').eq('discipline_id', parentId) });
+      childQueries.push({ type: 'section', table: 'sections', query: supabase.from('sections').select('*').eq('discipline_id', parentId) });
+      childQueries.push({ type: 'test_set', table: 'test_sets', query: supabase.from('test_sets').select('*').eq('discipline_id', parentId) });
+      break;
+    case 'attestation':
+      childQueries.push({ type: 'attestation_exam', table: 'attestation_exams', query: supabase.from('attestation_exams').select('*').eq('attestation_id', parentId) });
+      childQueries.push({ type: 'test_set', table: 'test_sets', query: supabase.from('test_sets').select('*').eq('parent_id', parentId) });
+      childQueries.push({ type: 'section', table: 'sections', query: supabase.from('sections').select('*').eq('parent_id', parentId) });
+      break;
+    case 'attestation_exam':
+      childQueries.push({ type: 'test_set', table: 'test_sets', query: supabase.from('test_sets').select('*').eq('parent_id', parentId) });
+      childQueries.push({ type: 'section', table: 'sections', query: supabase.from('sections').select('*').eq('parent_id', parentId) });
+      break;
+    case 'section':
+      childQueries.push({ type: 'section', table: 'sections', query: supabase.from('sections').select('*').eq('parent_id', parentId) });
+      childQueries.push({ type: 'test_set', table: 'test_sets', query: supabase.from('test_sets').select('*').eq('section_id', parentId) });
+      break;
+  }
+
+  // Also check parent_id for all types
+  const allChildTables = ['directions', 'courses', 'disciplines', 'attestations', 'attestation_exams', 'sections', 'helper_articles', 'test_sets'];
+  const allChildTypes = ['direction', 'course', 'discipline', 'attestation', 'attestation_exam', 'section', 'helper_article', 'test_set'];
+
+  for (let i = 0; i < allChildTables.length; i++) {
+    const t = allChildTables[i];
+    const tp = allChildTypes[i];
+    // Skip if already added above
+    const alreadyAdded = childQueries.some(cq => cq.table === t && cq.query.toString().includes(parentId));
+    if (!alreadyAdded) {
+      childQueries.push({ type: tp, table: t, query: supabase.from(t).select('*').eq('parent_id', parentId) });
+    }
+  }
+
+  for (const cq of childQueries) {
+    const { data: children } = await cq.query;
+    if (!children || children.length === 0) continue;
+
+    for (const child of children) {
+      // Move child to trash
+      await supabase.from('trash').insert({
+        content_type: cq.type,
+        content_id: child.id,
+        content_data: child,
+        parent_id: parentId,
+        deleted_at: new Date().toISOString(),
+        expires_at: expiresAt,
+        is_restored: false,
+      });
+
+      // Delete child from original table
+      await supabase.from(cq.table).delete().eq('id', child.id);
+
+      // Recursively delete children of this child
+      await cascadeDeleteToTrash(supabase, cq.type, child.id, expiresAt);
+    }
+  }
 }

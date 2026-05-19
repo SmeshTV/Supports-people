@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { supabase, type Course, type Discipline } from '../lib/supabase';
+import { supabase, type Course, type Discipline, type TestSet } from '../lib/supabase';
 
 export default function UniversityDisciplinesPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const [course, setCourse] = useState<Course | null>(null);
   const [disciplines, setDisciplines] = useState<Discipline[]>([]);
+  const [testSets, setTestSets] = useState<TestSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -13,13 +14,15 @@ export default function UniversityDisciplinesPage() {
     const fetchData = async () => {
       if (!courseId) return;
       
-      const [{ data: crs }, { data: discs }] = await Promise.all([
+      const [{ data: crs }, { data: discs }, { data: tests }] = await Promise.all([
         supabase.from('courses').select('*').eq('id', courseId).maybeSingle(),
-        supabase.from('disciplines').select('*').eq('course_id', courseId).eq('is_published', true).order('order_index')
+        supabase.from('disciplines').select('*').or(`course_id.eq.${courseId},parent_id.eq.${courseId}`).eq('is_published', true).order('order_index'),
+        supabase.from('test_sets').select('*').or(`course_id.eq.${courseId},parent_id.eq.${courseId}`).eq('is_published', true).order('created_at')
       ]);
       
       setCourse((crs as Course) || null);
       setDisciplines((discs as Discipline[]) || []);
+      setTestSets((tests as TestSet[]) || []);
       setLoading(false);
     };
     fetchData();
@@ -107,7 +110,35 @@ export default function UniversityDisciplinesPage() {
                   <p className="discipline-desc">{disc.description || 'Дисциплина'}</p>
                 </div>
               </Link>
-            ))}
+              ))}
+          </div>
+        )}
+
+        {testSets.length > 0 && (
+          <div style={{ marginTop: 48 }}>
+            <h2 className="section-title" style={{ marginBottom: 24 }}>Тесты курса</h2>
+            <div className="tests-grid">
+              {testSets.map((ts) => (
+                <Link key={ts.id} to={`/test/${ts.id}`} className="test-card">
+                  <div className="test-card-inner">
+                    <div className="test-card-header">
+                      <div>
+                        <h3 className="test-card-title">{ts.name}</h3>
+                        <p className="test-card-desc">{ts.description || 'Тест без описания'}</p>
+                      </div>
+                      <span className={`badge ${ts.settings?.mode === 'exam' ? 'badge-warning' : 'badge-success'}`}>
+                        {ts.settings?.mode === 'exam' ? 'Экзамен' : 'Практика'}
+                      </span>
+                    </div>
+                    <div className="test-card-meta">
+                      <span>{ts.question_ids?.length || 0} вопросов</span>
+                      <span>Проходной: {ts.settings?.passing_score_pct || 70}%</span>
+                    </div>
+                    <div className="btn btn-primary" style={{ width: '100%', marginTop: 16 }}>Начать тест</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>
