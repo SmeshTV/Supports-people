@@ -5055,6 +5055,12 @@ select { cursor: pointer; }
 .tree-node-dragover {
   background: var(--accent-soft);
   border: 1px dashed var(--accent);
+  transform: scale(1.02);
+}
+
+.tree-node-dragging {
+  opacity: 0.4;
+  border: 1px dashed var(--text-muted);
 }
 
 .tree-node-toggle {
