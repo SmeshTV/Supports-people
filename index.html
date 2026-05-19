@@ -7,9 +7,25 @@
     <meta property="og:image" content="https://bolt.new/static/og_default.png">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content="https://bolt.new/static/og_default.png">
-</head>
+    <style>
+      .skiptranslate iframe, .goog-te-banner-frame.skiptranslate { display: none !important; }
+      body { top: 0 !important; }
+      .goog-te-gadget { font-size: 0 !important; }
+      .goog-te-gadget .goog-te-combo { margin: 0; }
+    </style>
+  </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script type="text/javascript">
+      function googleTranslateElementInit() {
+        new google.translate.TranslateElement({
+          pageLanguage: 'en',
+          includedLanguages: 'en,ru,kk',
+          autoDisplay: false
+        }, 'google_translate_element');
+      }
+    </script>
+    <script type="text/javascript" src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   </body>
 </html>

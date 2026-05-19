@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase, supabaseAdmin } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
+import { useI18n } from '../lib/i18n';
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
+  const { t } = useI18n();
   const [stats, setStats] = useState({ tests: 0, avg: 0, best: 0, streak: 0 });
   const [recentTests, setRecentTests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,8 +47,8 @@ export default function DashboardPage() {
       <div className="container">
         <div className="page-header">
           <div>
-            <h1 className="page-title">Добро пожаловать, {user?.display_name || 'Студент'}!</h1>
-            <p className="page-subtitle">Ваш прогресс в обучении</p>
+            <h1 className="page-title">{t('dashboard.welcomeBack', 'Добро пожаловать')}, {user?.display_name || t('dashboard.student', 'Студент')}!</h1>
+            <p className="page-subtitle">{t('dashboard.progressSubtitle', 'Ваш прогресс в обучении')}</p>
           </div>
           {user && (
             <div className="user-info-badge">
@@ -64,7 +66,7 @@ export default function DashboardPage() {
               </svg>
             </div>
             <div className="stats-value">{stats.tests}</div>
-            <div className="stats-label">Тестов пройдено</div>
+            <div className="stats-label">{t('dashboard.testsTaken', 'Тестов пройдено')}</div>
           </div>
           <div className="stats-card">
             <div className="stats-icon" style={{ background: 'var(--success-soft)', color: 'var(--success)' }}>
@@ -73,7 +75,7 @@ export default function DashboardPage() {
               </svg>
             </div>
             <div className="stats-value">{stats.avg}%</div>
-            <div className="stats-label">Средний балл</div>
+            <div className="stats-label">{t('dashboard.averageScore', 'Средний балл')}</div>
           </div>
           <div className="stats-card">
             <div className="stats-icon" style={{ background: 'var(--warning-soft)', color: 'var(--warning)' }}>
@@ -82,7 +84,7 @@ export default function DashboardPage() {
               </svg>
             </div>
             <div className="stats-value">{stats.best}%</div>
-            <div className="stats-label">Лучший результат</div>
+            <div className="stats-label">{t('dashboard.bestScore', 'Лучший результат')}</div>
           </div>
           <div className="stats-card">
             <div className="stats-icon" style={{ background: 'rgba(236, 72, 153, 0.15)', color: '#ec4899' }}>
@@ -92,12 +94,12 @@ export default function DashboardPage() {
               </svg>
             </div>
             <div className="stats-value">{stats.streak}</div>
-            <div className="stats-label">Дней подряд</div>
+            <div className="stats-label">{t('dashboard.streak', 'Дней подряд')}</div>
           </div>
         </div>
 
         <div className="section-gap">
-          <h2 className="section-title-sm">Недавние тесты</h2>
+          <h2 className="section-title-sm">{t('dashboard.recentTests', 'Недавние тесты')}</h2>
           {loading ? (
             <div className="card skeleton-card">
               <div className="skeleton" style={{ height: 80 }} />
@@ -109,9 +111,9 @@ export default function DashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
               </div>
-              <h3 className="empty-card-title">Нет тестов</h3>
-              <p className="empty-card-desc">Начните первый тест чтобы увидеть результаты здесь</p>
-              <Link to="/subjects" className="btn btn-primary">Выбрать предмет</Link>
+              <h3 className="empty-card-title">{t('dashboard.noTests', 'Тестов пока нет')}</h3>
+              <p className="empty-card-desc">{t('dashboard.startFirst', 'Начните первый тест чтобы увидеть результаты здесь')}</p>
+              <Link to="/subjects" className="btn btn-primary">{t('dashboard.browseSubjects', 'Выбрать предмет')}</Link>
             </div>
           ) : (
             <div className="recent-list">
@@ -131,7 +133,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="section-gap">
-          <h2 className="section-title-sm">Быстрые действия</h2>
+          <h2 className="section-title-sm">{t('dashboard.quickActions', 'Быстрые действия')}</h2>
           <div className="quick-actions-grid">
             <Link to="/subjects" className="quick-action-card card card-hover">
               <div className="quick-action-icon" style={{ background: 'var(--accent-soft)' }}>
@@ -139,8 +141,8 @@ export default function DashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               </div>
-              <h3 className="quick-action-title">Продолжить обучение</h3>
-              <p className="quick-action-desc">Выбрать предмет и пройти тест</p>
+              <h3 className="quick-action-title">{t('dashboard.continueLearning', 'Продолжить обучение')}</h3>
+              <p className="quick-action-desc">{t('dashboard.continueLearningDesc', 'Выбрать предмет и пройти тест')}</p>
             </Link>
             <Link to="/bookmarks" className="quick-action-card card card-hover">
               <div className="quick-action-icon" style={{ background: 'var(--warning-soft)' }}>
@@ -148,8 +150,8 @@ export default function DashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                 </svg>
               </div>
-              <h3 className="quick-action-title">Закладки</h3>
-              <p className="quick-action-desc">Просмотреть сохраненные вопросы</p>
+              <h3 className="quick-action-title">{t('dashboard.bookmarks', 'Закладки')}</h3>
+              <p className="quick-action-desc">{t('dashboard.bookmarksDesc', 'Просмотреть сохраненные вопросы')}</p>
             </Link>
             <Link to="/profile" className="quick-action-card card card-hover">
               <div className="quick-action-icon" style={{ background: 'var(--success-soft)' }}>
@@ -157,8 +159,8 @@ export default function DashboardPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
-              <h3 className="quick-action-title">Профиль</h3>
-              <p className="quick-action-desc">Настройки аккаунта и статистика</p>
+              <h3 className="quick-action-title">{t('dashboard.profile', 'Профиль')}</h3>
+              <p className="quick-action-desc">{t('dashboard.profileDesc', 'Настройки аккаунта и статистика')}</p>
             </Link>
           </div>
         </div>

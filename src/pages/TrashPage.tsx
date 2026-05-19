@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabaseAdmin, type TrashItem, TRASH_TABLES } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
+import { useI18n } from '../lib/i18n';
 
 const DEV_EMAIL = 'smeshtrend@gmail.com';
 
 export default function TrashPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { t } = useI18n();
   const [items, setItems] = useState<TrashItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [restoring, setRestoring] = useState<string | null>(null);
@@ -74,10 +76,10 @@ export default function TrashPage() {
   const formatContentType = (type: string) => {
     const types: Record<string, string> = {
       subject: 'Предмет',
-      direction: 'Папка (Направление)',
-      course: 'Папка (Курс)',
+      direction: 'Папка',
+      course: 'Курс',
       semester: 'Семестр',
-      discipline: 'Папка (Дисциплина)',
+      discipline: 'Дисциплина',
       section: 'Тема',
       test_set: 'Тест',
       question: 'Вопрос',
@@ -102,8 +104,8 @@ export default function TrashPage() {
     const expires = new Date(expiresAt);
     const now = new Date();
     const diff = Math.ceil((expires.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-    if (diff <= 0) return 'Истёк';
-    return `${diff} дн.`;
+    if (diff <= 0) return 'Expired';
+    return `${diff} d.`;
   };
 
   return (
@@ -118,8 +120,8 @@ export default function TrashPage() {
               Назад
             </button>
             <div>
-              <h1 className="page-title">🗑️ Корзина</h1>
-              <p className="page-subtitle">Восстановление удалённых элементов (удаляются через 30 дней)</p>
+              <h1 className="page-title">🗑️ {t('trash.title', 'Корзина')}</h1>
+              <p className="page-subtitle">{t('trash.subtitle', 'Восстановление удалённых элементов (удаляются через 30 дней)')}</p>
             </div>
           </div>
         </div>
@@ -133,8 +135,8 @@ export default function TrashPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h3 className="empty-state-title">Корзина пуста</h3>
-            <p className="empty-state-description">Удалённые элементы будут появляться здесь</p>
+            <h3 className="empty-state-title">{t('trash.empty', 'Корзина пуста')}</h3>
+            <p className="empty-state-description">{t('trash.emptyDesc', 'Удалённые элементы будут появляться здесь')}</p>
           </div>
         ) : (
           <div className="trash-list">
@@ -161,13 +163,13 @@ export default function TrashPage() {
                       onClick={() => handleRestore(item)}
                       disabled={restoring === item.id}
                     >
-                      ↩ Восстановить
+                      ↩ {t('trash.restore', 'Восстановить')}
                     </button>
                     <button
                       className="btn btn-danger btn-sm"
                       onClick={() => handlePermanentDelete(item.id, name)}
                     >
-                      🗑 Удалить навсегда
+                      🗑 {t('trash.deleteForever', 'Удалить навсегда')}
                     </button>
                   </div>
                 </div>
