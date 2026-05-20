@@ -88,14 +88,14 @@ export default function HelperSubjectsPage() {
     <main className="page-container">
       <div className="container">
         <div className="page-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div className="helper-page-header">
             <button onClick={() => navigate(-1)} className="btn btn-ghost btn-sm">
               <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
               Назад
             </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="helper-title-row">
               <div className="subject-card-icon" style={{ color: direction.color || '#ec4899' }}>{icon}</div>
               <div>
                 <h1 className="page-title">{direction.name}</h1>
