@@ -36,6 +36,7 @@ export default function AdminQuestions() {
     correctText: '',
     correctTextTranslations: { ru: '', en: '', kz: '' },
     correctOrder: [],
+    correctOrderTranslations: { ru: [], en: [], kz: [] },
     correctPairs: [],
     explanationText: '',
     explanationTranslations: { ru: '', en: '', kz: '' },
@@ -99,6 +100,7 @@ export default function AdminQuestions() {
       correct_text: questionForm.correctText,
       correct_text_translations: questionForm.correctTextTranslations,
       correct_order: questionForm.correctOrder,
+      correct_order_translations: questionForm.correctOrderTranslations || {},
       correct_pairs: questionForm.correctPairs,
       explanation: {
         text: questionForm.explanationText,
@@ -150,6 +152,7 @@ export default function AdminQuestions() {
       correctText: '',
       correctTextTranslations: { ru: '', en: '', kz: '' },
       correctOrder: [],
+      correctOrderTranslations: { ru: [], en: [], kz: [] },
       correctPairs: [],
       explanationText: '',
       explanationTranslations: { ru: '', en: '', kz: '' },
@@ -194,6 +197,7 @@ export default function AdminQuestions() {
       correctText: (q as any).correct_text || '',
       correctTextTranslations: (q as any).correct_text_translations || { ru: '', en: '', kz: '' },
       correctOrder: (q as any).correct_order || [],
+      correctOrderTranslations: (q as any).correct_order_translations || { ru: [], en: [], kz: [] },
       correctPairs: (q as any).correct_pairs || [],
       explanationText: (q.explanation as any)?.text || '',
       explanationTranslations: (q.explanation as any)?.text_translations || { ru: '', en: '', kz: '' },
@@ -225,6 +229,7 @@ export default function AdminQuestions() {
       correct_text: (q as any).correct_text,
       correct_text_translations: (q as any).correct_text_translations,
       correct_order: (q as any).correct_order,
+      correct_order_translations: (q as any).correct_order_translations || {},
       correct_pairs: (q as any).correct_pairs,
       explanation: q.explanation,
       hint: q.hint,
@@ -510,7 +515,7 @@ export default function AdminQuestions() {
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-secondary" onClick={() => { setEditingQuestion(null); setShowImportModal(true); setImportPreview(null); }}>📥 Импорт</button>
-          <button className="btn btn-primary" onClick={() => { setEditingQuestion(null); setQuestionForm({ type: 'single', bodyText: '', bodyTranslations: { ru: '', en: '', kz: '' }, imageUrl: '', options: [{ id: generateId(), text: '', text_translations: { ru: '', en: '', kz: '' }, isCorrect: false }, { id: generateId(), text: '', text_translations: { ru: '', en: '', kz: '' }, isCorrect: false }, { id: generateId(), text: '', text_translations: { ru: '', en: '', kz: '' }, isCorrect: false }, { id: generateId(), text: '', text_translations: { ru: '', en: '', kz: '' }, isCorrect: false }], correctAnswers: [], correctText: '', correctTextTranslations: { ru: '', en: '', kz: '' }, correctOrder: [], correctPairs: [], explanationText: '', explanationTranslations: { ru: '', en: '', kz: '' }, hint: '', hintTranslations: { ru: '', en: '', kz: '' }, difficulty: 'medium', points: 1 }); setShowModal(true); }}>+ Добавить вопрос</button>
+          <button className="btn btn-primary" onClick={() => { setEditingQuestion(null); setQuestionForm({ type: 'single', bodyText: '', bodyTranslations: { ru: '', en: '', kz: '' }, imageUrl: '', options: [{ id: generateId(), text: '', text_translations: { ru: '', en: '', kz: '' }, isCorrect: false }, { id: generateId(), text: '', text_translations: { ru: '', en: '', kz: '' }, isCorrect: false }, { id: generateId(), text: '', text_translations: { ru: '', en: '', kz: '' }, isCorrect: false }, { id: generateId(), text: '', text_translations: { ru: '', en: '', kz: '' }, isCorrect: false }], correctAnswers: [], correctText: '', correctTextTranslations: { ru: '', en: '', kz: '' }, correctOrder: [], correctOrderTranslations: { ru: [], en: [], kz: [] }, correctPairs: [], explanationText: '', explanationTranslations: { ru: '', en: '', kz: '' }, hint: '', hintTranslations: { ru: '', en: '', kz: '' }, difficulty: 'medium', points: 1 }); setShowModal(true); }}>+ Добавить вопрос</button>
         </div>
       </div>
 

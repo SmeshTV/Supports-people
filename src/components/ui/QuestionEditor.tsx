@@ -26,7 +26,7 @@ type QuestionForm = {
   correctText: string;
   correctTextTranslations: Translations;
   correctOrder: string[];
-  correctOrderTranslations?: Record<string, string[]>;
+  correctOrderTranslations: Record<string, string[]>;
   correctPairs: Pair[];
   explanationText: string;
   explanationTranslations: Translations;
@@ -135,16 +135,38 @@ export default function QuestionEditor({ form, onChange }: QuestionEditorProps) 
   };
 
   const addOrderItem = () => {
-    update({ correctOrder: [...form.correctOrder, ''] });
+    const newOrder = [...form.correctOrder, ''];
+    const newTranslations = { ...(form.correctOrderTranslations || {}) };
+    LANGUAGES.forEach(l => {
+      newTranslations[l.code] = [...(newTranslations[l.code] || []), ''];
+    });
+    update({ correctOrder: newOrder, correctOrderTranslations: newTranslations });
   };
 
   const removeOrderItem = (idx: number) => {
     if (form.correctOrder.length <= 2) return;
-    update({ correctOrder: form.correctOrder.filter((_, i) => i !== idx) });
+    const newTranslations = { ...(form.correctOrderTranslations || {}) };
+    LANGUAGES.forEach(l => {
+      if (newTranslations[l.code]) {
+        newTranslations[l.code] = newTranslations[l.code].filter((_: string, i: number) => i !== idx);
+      }
+    });
+    update({
+      correctOrder: form.correctOrder.filter((_, i) => i !== idx),
+      correctOrderTranslations: newTranslations,
+    });
   };
 
   const updateOrderItem = (idx: number, value: string) => {
     update({ correctOrder: form.correctOrder.map((v, i) => i === idx ? value : v) });
+  };
+
+  const updateOrderItemTranslation = (idx: number, lang: string, value: string) => {
+    const newTranslations = { ...(form.correctOrderTranslations || {}) };
+    const arr = [...(newTranslations[lang] || [])];
+    arr[idx] = value;
+    newTranslations[lang] = arr;
+    update({ correctOrderTranslations: newTranslations });
   };
 
   const moveOrderItem = (idx: number, dir: -1 | 1) => {
@@ -152,7 +174,15 @@ export default function QuestionEditor({ form, onChange }: QuestionEditorProps) 
     if (newIdx < 0 || newIdx >= form.correctOrder.length) return;
     const arr = [...form.correctOrder];
     [arr[idx], arr[newIdx]] = [arr[newIdx], arr[idx]];
-    update({ correctOrder: arr });
+    const newTranslations = { ...(form.correctOrderTranslations || {}) };
+    LANGUAGES.forEach(l => {
+      if (newTranslations[l.code] && newTranslations[l.code].length > 1) {
+        const tArr = [...newTranslations[l.code]];
+        [tArr[idx], tArr[newIdx]] = [tArr[newIdx], tArr[idx]];
+        newTranslations[l.code] = tArr;
+      }
+    });
+    update({ correctOrder: arr, correctOrderTranslations: newTranslations });
   };
 
   const isOptionsType = ['single', 'multiple', 'truefalse', 'dropdown'].includes(form.type);
@@ -454,7 +484,16 @@ export default function QuestionEditor({ form, onChange }: QuestionEditorProps) 
                 {form.correctOrder.map((item, idx) => (
                   <div key={idx} className="ordering-row">
                     <span className="ordering-number">{idx + 1}</span>
-                    <input type="text" value={item} onChange={e => updateOrderItem(idx, e.target.value)} placeholder={`Элемент ${idx + 1}`} />
+                    {activeLang === 'ru' ? (
+                      <input type="text" value={item} onChange={e => updateOrderItem(idx, e.target.value)} placeholder={`Элемент ${idx + 1}`} />
+                    ) : (
+                      <input
+                        type="text"
+                        value={form.correctOrderTranslations?.[activeLang]?.[idx] || ''}
+                        onChange={e => updateOrderItemTranslation(idx, activeLang, e.target.value)}
+                        placeholder={`Элемент ${idx + 1} (${LANGUAGES.find(l => l.code === activeLang)?.label})`}
+                      />
+                    )}
                     <div className="ordering-arrows">
                       <button type="button" className="ordering-arrow-btn" onClick={() => moveOrderItem(idx, -1)} disabled={idx === 0}>↑</button>
                       <button type="button" className="ordering-arrow-btn" onClick={() => moveOrderItem(idx, 1)} disabled={idx === form.correctOrder.length - 1}>↓</button>

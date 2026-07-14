@@ -55,7 +55,8 @@ export type Question = {
   correct_text?: string;
   correct_text_translations?: Record<string, string>;
   correct_order?: string[];
-  correct_pairs?: { left: string; right: string }[];
+  correct_order_translations?: Record<string, string[]>;
+  correct_pairs?: { left: string; left_translations?: Record<string, string>; right: string; right_translations?: Record<string, string> }[];
   explanation: { text: string; text_translations?: Record<string, string> };
   hint: string;
   hint_translations?: Record<string, string>;

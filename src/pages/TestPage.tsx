@@ -114,6 +114,19 @@ export default function TestPage() {
     return getTranslation((question as any).hint_translations, question.hint || '', language);
   };
 
+  const getOrderItemText = (item: string, question: Question): string => {
+    const translations = (question as any).correct_order_translations;
+    if (!translations || !translations[language]) return item;
+    const idx = (question.correct_order || []).indexOf(item);
+    if (idx === -1) return item;
+    return translations[language]?.[idx] || item;
+  };
+
+  const getMatchText = (text: string, translations: Record<string, string> | undefined): string => {
+    if (!translations) return text;
+    return translations[language] || text;
+  };
+
   const getTypeLabel = (type: string): string => {
     const labels: Record<string, string> = {
       single: language === 'en' ? 'Single choice' : language === 'kk' ? 'Бір жауап' : 'Один ответ',
@@ -563,21 +576,21 @@ export default function TestPage() {
           {/* Ordering */}
           {needsOrdering && (
             <div className="ordering-test-section">
-              <p className="ordering-instruction">Расставьте элементы в правильном порядке:</p>
+              <p className="ordering-instruction">{language === 'en' ? 'Arrange items in the correct order:' : language === 'kk' ? 'Элементтерді дұрыс ретпен орналастырыңыз:' : 'Расставьте элементы в правильном порядке:'}</p>
               <div className="ordering-test-list">
                 {shuffledOrderOptions.map((item) => {
                   const orderIdx = orderAnswer.indexOf(item);
                   if (orderIdx === -1) {
                     return (
                       <div key={item} className="ordering-test-item" onClick={() => !(showExplanation || alreadyAnswered) && setOrderAnswer(prev => [...prev, item])} style={{ cursor: showExplanation || alreadyAnswered ? 'default' : 'pointer', opacity: showExplanation || alreadyAnswered ? 0.7 : 1 }}>
-                        {item}
+                        {getOrderItemText(item, question)}
                       </div>
                     );
                   }
                   return null;
                 })}
               </div>
-              <h4 style={{ marginTop: 20, marginBottom: 10 }}>Ваш порядок:</h4>
+              <h4 style={{ marginTop: 20, marginBottom: 10 }}>{language === 'en' ? 'Your order:' : language === 'kk' ? 'Сіздің ретіңіз:' : 'Ваш порядок:'}</h4>
               <div className="ordering-test-placed">
                 {orderAnswer.map((item, i) => {
                   const correctOrder = question.correct_order || [];
@@ -585,7 +598,7 @@ export default function TestPage() {
                   return (
                     <div key={item} className="ordering-test-placed-item" style={{ borderLeft: `4px solid ${(showExplanation || alreadyAnswered) ? (isCorrectPosition ? 'var(--success)' : 'var(--danger)') : 'var(--border)'}` }}>
                       <span className="ordering-placed-num">{i + 1}</span>
-                      {item}
+                      {getOrderItemText(item, question)}
                       {!(showExplanation || alreadyAnswered) && <span className="ordering-remove" onClick={() => setOrderAnswer(prev => prev.filter(v => v !== item))}>×</span>}
                     </div>
                   );
@@ -611,22 +624,23 @@ export default function TestPage() {
           {/* Matching */}
           {needsMatching && (
             <div className="matching-test-section">
-              <p className="matching-instruction">Соедините элементы из левой колонки с правой:</p>
+              <p className="matching-instruction">{language === 'en' ? 'Connect items from the left column with the right:' : language === 'kk' ? 'Сол жақ бағандағы элементтерді оң жақпен жалғаңыз:' : 'Соедините элементы из левой колонки с правой:'}</p>
               <div className="matching-test-grid">
                 <div className="matching-test-col">
-                  <h4>Левая колонка</h4>
+                  <h4>{language === 'en' ? 'Left column' : language === 'kk' ? 'Сол жақ баған' : 'Левая колонка'}</h4>
                   {matchAnswer.map((m, i) => {
                     const correctPair = (question.correct_pairs || []).find((p: any) => p.left === m.left);
                     const isCorrect = correctPair && correctPair.right === m.right;
+                    const leftTranslations = correctPair?.left_translations;
                     return (
                       <div key={i} className="matching-test-left" style={showExplanation || alreadyAnswered ? { borderLeft: `4px solid ${isCorrect ? 'var(--success)' : 'var(--danger)'}` } : {}}>
-                        {m.left}
+                        {getMatchText(m.left, leftTranslations)}
                       </div>
                     );
                   })}
                 </div>
                 <div className="matching-test-col">
-                  <h4>Правая колонка</h4>
+                  <h4>{language === 'en' ? 'Right column' : language === 'kk' ? 'Оң жақ баған' : 'Правая колонка'}</h4>
                   {matchAnswer.map((m, i) => {
                     const correctPair = (question.correct_pairs || []).find((p: any) => p.left === m.left);
                     const isCorrect = correctPair && correctPair.right === m.right;
@@ -643,10 +657,13 @@ export default function TestPage() {
                         disabled={!!(showExplanation || alreadyAnswered)}
                         style={showExplanation || alreadyAnswered ? { border: `2px solid ${isCorrect ? 'var(--success)' : 'var(--danger)'}`, background: isCorrect ? 'var(--success-soft)' : 'var(--danger-soft)', opacity: 0.8 } : {}}
                       >
-                        <option value="">Выберите...</option>
-                        {matchRightShuffled.map((opt, j) => (
-                          <option key={j} value={opt}>{opt}</option>
-                        ))}
+                        <option value="">{language === 'en' ? 'Select...' : language === 'kk' ? 'Таңдаңыз...' : 'Выберите...'}</option>
+                        {matchRightShuffled.map((opt, j) => {
+                          const rightPair = (question.correct_pairs || []).find((p: any) => p.right === opt);
+                          return (
+                            <option key={j} value={opt}>{getMatchText(opt, rightPair?.right_translations)}</option>
+                          );
+                        })}
                       </select>
                     );
                   })}
@@ -659,13 +676,13 @@ export default function TestPage() {
           {(showExplanation || alreadyAnswered) && needsMatching && (
             <div style={{ marginTop: 16 }}>
               <div style={{ padding: '12px', background: 'var(--success-soft)', borderRadius: '8px', border: '1px solid var(--success)' }}>
-                <p style={{ fontSize: '12px', color: 'var(--success)', marginBottom: '8px', fontWeight: 600 }}>Правильные соответствия:</p>
+                <p style={{ fontSize: '12px', color: 'var(--success)', marginBottom: '8px', fontWeight: 600 }}>{language === 'en' ? 'Correct matches:' : language === 'kk' ? 'Дұрыс сәйкестіктер:' : 'Правильные соответствия:'}</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {(question.correct_pairs || []).map((pair: any, i: number) => (
                     <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
-                      <span style={{ fontWeight: 600 }}>{pair.left}</span>
+                      <span style={{ fontWeight: 600 }}>{getMatchText(pair.left, pair.left_translations)}</span>
                       <span style={{ color: 'var(--success)' }}>→</span>
-                      <span>{pair.right}</span>
+                      <span>{getMatchText(pair.right, pair.right_translations)}</span>
                     </div>
                   ))}
                 </div>

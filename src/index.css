@@ -1049,6 +1049,15 @@ body {
 
 .modal-body { padding: 24px; }
 
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+
 .page-container {
   min-height: 100vh;
   padding-top: 64px;
