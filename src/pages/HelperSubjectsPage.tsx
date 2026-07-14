@@ -216,7 +216,7 @@ export default function HelperSubjectsPage() {
               )}
               {selectedTopic.content && (
                 <div style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, marginBottom: 16 }}>
-                  <p style={{ whiteSpace: 'pre-wrap' }}>{selectedTopic.content}</p>
+                  <div style={{ lineHeight: 1.8 }} dangerouslySetInnerHTML={{ __html: selectedTopic.content || '' }} />
                 </div>
               )}
             </div>

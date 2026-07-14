@@ -18,6 +18,7 @@ export default function SchoolEntSubjectsPage() {
   const [direction, setDirection] = useState<Direction | null>(null);
   const [topics, setTopics] = useState<Section[]>([]);
   const [testSets, setTestSets] = useState<TestSet[]>([]);
+  const [childDirections, setChildDirections] = useState<Direction[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTopic, setSelectedTopic] = useState<Section | null>(null);
 
@@ -25,15 +26,17 @@ export default function SchoolEntSubjectsPage() {
     const fetchData = async () => {
       if (!subjectId) return;
       
-      const [{ data: dir }, { data: secs }, { data: tests }] = await Promise.all([
+      const [{ data: dir }, { data: secs }, { data: tests }, { data: childDirs }] = await Promise.all([
         supabase.from('directions').select('*').eq('id', subjectId).maybeSingle(),
         supabase.from('sections').select('*').or(`direction_id.eq.${subjectId},parent_id.eq.${subjectId}`).eq('is_published', true).order('order_index'),
-        supabase.from('test_sets').select('*').or(`direction_id.eq.${subjectId},parent_id.eq.${subjectId}`).eq('is_published', true).order('created_at')
+        supabase.from('test_sets').select('*').or(`direction_id.eq.${subjectId},parent_id.eq.${subjectId}`).eq('is_published', true).order('created_at'),
+        supabase.from('directions').select('*').eq('parent_id', subjectId).eq('is_published', true).order('order_index')
       ]);
       
       setDirection((dir as Direction) || null);
       setTopics((secs as Section[]) || []);
       setTestSets((tests as TestSet[]) || []);
+      setChildDirections((childDirs as Direction[]) || []);
       setLoading(false);
     };
     fetchData();
@@ -101,7 +104,7 @@ export default function SchoolEntSubjectsPage() {
           </div>
         </div>
 
-        {topics.length === 0 ? (
+        {childDirections.length === 0 && topics.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">
               <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -113,6 +116,28 @@ export default function SchoolEntSubjectsPage() {
           </div>
         ) : (
           <div className="topics-grid">
+            {childDirections.map((childDir) => (
+              <Link
+                key={childDir.id}
+                to={`/school/ent/${childDir.id}`}
+                className="topic-card"
+                style={{ cursor: 'pointer', textDecoration: 'none', color: 'inherit' }}
+              >
+                <div className="topic-card-inner">
+                  <div className="topic-card-header" style={{ background: gradient }}>
+                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                  </div>
+                  <div className="topic-card-body">
+                    <h3 className="topic-card-title">{childDir.name}</h3>
+                    {childDir.description && (
+                      <p className="topic-card-desc">{childDir.description}</p>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            ))}
             {topics.map((topic) => (
               <div 
                 key={topic.id} 
@@ -180,7 +205,7 @@ export default function SchoolEntSubjectsPage() {
               )}
               {selectedTopic.content && (
                 <div style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, marginBottom: 16 }}>
-                  <p style={{ whiteSpace: 'pre-wrap' }}>{selectedTopic.content}</p>
+                  <div dangerouslySetInnerHTML={{ __html: selectedTopic.content || '' }} style={{ lineHeight: 1.8 }} />
                 </div>
               )}
             </div>

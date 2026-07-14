@@ -107,9 +107,7 @@ export default function SchoolEntTopicDetailPage() {
           <div className="lecture-content">
             {topic.lecture_content ? (
               <div className="card" style={{ padding: 32 }}>
-                <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>
-                  {topic.lecture_content}
-                </div>
+                <div style={{ lineHeight: 1.8 }} dangerouslySetInnerHTML={{ __html: topic.lecture_content || '' }} />
               </div>
             ) : (
               <div className="empty-state">

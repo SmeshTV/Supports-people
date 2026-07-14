@@ -26,7 +26,7 @@ export default function DirectionPage() {
       
       const [{ data: dt }, { data: dirs }] = await Promise.all([
         supabase.from('direction_types').select('*').eq('type', type).maybeSingle(),
-        supabase.from('directions').select('*').eq('direction_type', type).eq('is_published', true).order('order_index')
+        supabase.from('directions').select('*').eq('direction_type', type).eq('is_published', true).is('parent_id', null).order('order_index')
       ]);
       
       setDirectionType((dt as DirectionType) || null);
